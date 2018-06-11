@@ -20,17 +20,17 @@
 
 void setup()
 {
-    console.Init(57600);
-  Input::begin();
-    blinkingLed.Init();
-    leftMotor.Init();
-    rightMotor.Init();
+	console.Init(57600);
+	Input::begin();
+	blinkingLed.Init();
+	leftMotor.Init();
+	rightMotor.Init();
 
-    Serial << "[TicTac] I'm ready!" << endl;
+	Serial << "[TicTac] I'm ready!" << endl;
 }
 
 void loop()
 {
-    console.Update();
-    blinkingLed.Update();
+	console.Update();
+	blinkingLed.Update();
 }

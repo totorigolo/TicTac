@@ -18,13 +18,13 @@
 #include <Arduino.h>
 
 class Console {
-public:
-    constexpr Console() = default;
+	public:
+		constexpr Console() = default;
 
-    inline void Init(unsigned long speed) { Serial.begin(speed); }
-    void Update();
+		inline void Init(unsigned long speed) { Serial.begin(speed); }
+		void Update();
 
-private:
-    int m_motorPower = 60;
-    int m_motorDir = 1;
+	private:
+		int m_motorPower = 60;
+		int m_motorDir = 1;
 };

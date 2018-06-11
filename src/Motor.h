@@ -19,23 +19,23 @@
 #include "Input.h"
 
 class Motor {
-public:
-    constexpr Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable)
-            : m_name(name), m_pin1(pin1), m_pin2(pin2), m_pinEn(pinEnable) { }
+	public:
+		constexpr Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable)
+			: m_name(name), m_pin1(pin1), m_pin2(pin2), m_pinEn(pinEnable) { }
 
-    void Init();
+		void Init();
 
-    void SetPower(int power);
+		void SetPower(int power);
 
-    void parseInput();
+		void parseInput();
 
-    void spin(uint8_t pin1, uint8_t pin2);
+		void spin(uint8_t pin1, uint8_t pin2);
 
-    constexpr int Get4() { return 4; }
+		constexpr int Get4() { return 4; }
 
-private:
-    char m_name;
-    uint8_t m_pin1;
-    uint8_t m_pin2;
-    uint8_t m_pinEn;
+	private:
+		char m_name;
+		uint8_t m_pin1;
+		uint8_t m_pin2;
+		uint8_t m_pinEn;
 };

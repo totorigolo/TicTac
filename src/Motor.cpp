@@ -18,38 +18,38 @@
 
 void Motor::Init()
 {
-    pinMode(m_pin1, OUTPUT);
-    pinMode(m_pin2, OUTPUT);
-    pinMode(m_pinEn, OUTPUT);
+	pinMode(m_pin1, OUTPUT);
+	pinMode(m_pin2, OUTPUT);
+	pinMode(m_pinEn, OUTPUT);
 
-    SetPower(0);
+	SetPower(0);
 }
 
 void Motor::SetPower(int power)
 {
-  spin(power>0 ? HIGH : LOW , power>=0 ? LOW : HIGH);
+	spin(power>0 ? HIGH : LOW , power>=0 ? LOW : HIGH);
 
-    analogWrite(m_pinEn, abs(power));
+	analogWrite(m_pinEn, abs(power));
 
-//    Serial << "Motor " << m_name << ": " << power << endl;
+	//    Serial << "Motor " << m_name << ": " << power << endl;
 }
 
 void Motor::spin(uint8_t pin1, uint8_t pin2)
 {
-  digitalWrite(m_pin1, pin1);
-  digitalWrite(m_pin2, pin2);
+	digitalWrite(m_pin1, pin1);
+	digitalWrite(m_pin2, pin2);
 }
 
 void Motor::parseInput()
 {
-  char c=Input::getChar();
-  if (c == '+')
-    spin(HIGH, LOW);
-  else if (c == '-')
-    spin(LOW, HIGH);
-  else if (c == '*')
-    spin(LOW, LOW);
-  else if (c>='0' && c<='9' || c=='-')
-    SetPower(Input::getInt());
+	char c=Input::getChar();
+	if (c == '+')
+		spin(HIGH, LOW);
+	else if (c == '-')
+		spin(LOW, HIGH);
+	else if (c == '*')
+		spin(LOW, LOW);
+	else if (c>='0' && c<='9' || c=='-')
+		SetPower(Input::getInt());
 }
 
