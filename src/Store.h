@@ -20,6 +20,7 @@
 #include "Motor.h"
 #include "Console.h"
 #include "BlinkingLed.h"
+#include "Pid.h"
 
 // Console
 extern Console console;
@@ -30,4 +31,5 @@ extern BlinkingLed blinkingLed;
 // Motors
 extern Motor leftMotor;
 extern Motor rightMotor;
+extern Pid<float> pid;
 

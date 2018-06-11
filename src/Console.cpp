@@ -14,43 +14,56 @@
 // along with TicTac.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Console.h"
-
 #include "Store.h"
 
 void Console::Update()
 {
-    while (Serial.available() > 0)
-    {
-        int incomingByte = Serial.read();
+	if (Serial.available())
+	{
+		{
+			char c = Serial.read();
 
-        /////////////////////////////////////////////////////////////////////////
-        /// Blinking LED
+			if (c != '\r' && c != '\n')
+			{
+				Input::addChar(c);
+				return;
+			}
+		}
 
-        // Enabled / disabled
-        if (incomingByte == 'e') blinkingLed.Enable();
-        else if (incomingByte == 'd') blinkingLed.Disable();
+		char c = Input::getChar();
+		/////////////////////////////////////////////////////////////////////////
+		/// Blinking LED
+
+		// Enabled / disabled
+		if (c == 'e') blinkingLed.Enable();
+		else if (c == 'd') blinkingLed.Disable();
 
 
-        /////////////////////////////////////////////////////////////////////////
-        /// Motors
+		/////////////////////////////////////////////////////////////////////////
+		/// Motors
 
-        // Power
-        if (incomingByte >= '0' && incomingByte <= '9')
-            m_motorPower = 25 * (incomingByte - '0');
+		if (c == 'l')
+		{
+			leftMotor.parseInput();
+		}
+		else if (c == 'r')
+		{
+			rightMotor.parseInput();
+		}
 
-        // Direction
-        if (incomingByte == '+') m_motorDir = 1;
-        else if (incomingByte == '-') m_motorDir = -1;
-        else if (incomingByte == '0') m_motorDir = 0;
+		/////////////////////////////////////////////////////////////////////////
+		/// PIDs
 
-        // Setup
-        if (incomingByte == 'l')
-        {
-            leftMotor.SetPower(m_motorPower * m_motorDir);
-        }
-        else if (incomingByte == 'r')
-        {
-            rightMotor.SetPower(m_motorPower * m_motorDir);
-        }
-    }
+		if (c == 'p')
+			pid.setKp(Input::getFloat());
+		else if (c == 'i')
+			pid.setKi(Input::getFloat());
+		else if (c == 'd')
+			pid.setKd(Input::getFloat());
+		else if (c == 'f')
+		{
+			Serial << "FLOAT : " << Input::getFloat() << endl;
+		}
+		Input::clear();
+	}
 }

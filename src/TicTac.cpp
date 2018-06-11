@@ -21,6 +21,7 @@
 void setup()
 {
     console.Init(57600);
+  Input::begin();
     blinkingLed.Init();
     leftMotor.Init();
     rightMotor.Init();

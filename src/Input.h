@@ -15,50 +15,97 @@
 
 #pragma once
 
+#include <Arduino.h>
+
 const int MaxInputSize = 16;
 class Input
 {
-  public:
-    
-    static void begin()
-    {
-      head=buff;
-      queue=buff;
-    }
-    
-    static add(char c)
-    {
-      inc(head);
-      *head = c;
-    }
+	public:
 
-    static char getChar()
-    {
-      if (head == queue)
-        return 0;
-      inc(head);
-      return *head;  
-    }
+		static void begin()
+		{
+			if (buff)
+				delete[] buff;
+			buff = new char[MaxInputSize];
+			clear();
+		}
 
-    static int getInt()
-    {
-      int result=0;
-      bool negative = false;
-      while(getChar())
-    }
+		static void clear()
+		{
+			head=buff;
+			queue=buff;
+		}
 
-  private:
-    Input() {}
+		static addChar(char c)
+		{
+			inc(head);
+			*head = c;
+		}
 
-    static void inc(char* &ptr)
-    {
-      ptr++;
-      if (ptr == buff+MaxInputSize)
-        ptr = buff;
-    }
+		static char getChar()
+		{
+			if (head == queue)
+				return 0;
+			inc(queue);
+			return *queue;  
+		}
 
-    static char* buff;
-    static char* head;
-    static char* queue;     
+		static bool empty()
+		{
+			return (head == queue);
+		}
+
+		static int getInt() { return static_cast<int>(getFloat()); }
+
+		static float getFloat()
+		{
+			float result = 0.0;
+			bool negative = false;
+			bool decimals = false;
+			float decimal = 0.1;
+			char c = getChar();
+			if (c == '-')
+			{
+				negative=true;
+				c = getChar();
+			}
+
+			while (c == '.' || c == '+' || isDigit(c))
+			{
+				if (c == '.')
+				{
+					if (decimals)
+						break;
+					decimals = true;
+				}
+				else if (decimals)
+				{
+					result += decimal * static_cast<float>(c-'0');
+					decimal *= 0.1;
+				}
+				else
+				{
+					result *=10.0;
+					result += c-'0';
+				}
+				c = getChar();
+			}
+
+			return result * (negative ? -1.0 : 1.0);
+		}
+
+	private:
+		Input() {}
+
+		static void inc(char* &ptr)
+		{
+			ptr++;
+			if (ptr == buff+MaxInputSize)
+				ptr = buff;
+		}
+
+		static char* buff;
+		static char* head;
+		static char* queue;     
 };
 
