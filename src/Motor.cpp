@@ -15,6 +15,7 @@
 
 #include "Motor.h"
 #include "Streaming.h"
+#include "Setup.h"
 
 void Motor::Init()
 {
@@ -22,20 +23,29 @@ void Motor::Init()
 	pinMode(m_pin2, OUTPUT);
 	pinMode(m_pinEn, OUTPUT);
 
-	SetPower(0);
+	setPower(0);
 }
 
-void Motor::SetPower(int power)
+void Motor::setPower(int power)
 {
+	if (power>255) power=255;
+	if (power<-255) power=-255;
+	if (last_power == power) return;
+	last_power = power;
 	spin(power>0 ? HIGH : LOW , power>=0 ? LOW : HIGH);
 
 	analogWrite(m_pinEn, abs(power));
 
-	//    Serial << "Motor " << m_name << ": " << power << endl;
+	if (Setup::viewMotors())
+		Serial << "Motor " << m_name << ": " << power << endl;
 }
 
 void Motor::spin(uint8_t pin1, uint8_t pin2)
 {
+	if (pin1 == HIGH)
+		last_power = abs(last_power);
+	else
+		last_power = -abs(last_power);
 	digitalWrite(m_pin1, pin1);
 	digitalWrite(m_pin2, pin2);
 }
@@ -50,6 +60,17 @@ void Motor::parseInput()
 	else if (c == '*')
 		spin(LOW, LOW);
 	else if (c>='0' && c<='9' || c=='-')
-		SetPower(Input::getInt());
+	{
+		Input::unget(c);
+		setPower(Input::getInt());
+	}
+	else
+		Input::unget(c);
+}
+
+void Motor::help()
+{
+	Serial << "  + * - : change spin" << endl;
+	Serial << "  nnn   : change speed" << endl;
 }
 

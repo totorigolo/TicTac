@@ -21,6 +21,7 @@
 #include "Console.h"
 #include "BlinkingLed.h"
 #include "Pid.h"
+#include "Setup.h"
 
 // Console
 extern Console console;
@@ -32,4 +33,10 @@ extern BlinkingLed blinkingLed;
 extern Motor leftMotor;
 extern Motor rightMotor;
 extern Pid<float> pid;
+
+extern unsigned long interval;
+extern unsigned long tm;
+extern float fps;
+extern uint8_t pid_input_index;
+extern int16_t pid_target_value;
 

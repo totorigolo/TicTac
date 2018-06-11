@@ -50,6 +50,12 @@ class Input
 			return *queue;  
 		}
 
+		static void unget(char c)
+		{
+			*queue=c;
+			dec(queue);
+		}
+
 		static bool empty()
 		{
 			return (head == queue);
@@ -90,6 +96,7 @@ class Input
 				}
 				c = getChar();
 			}
+			if (c) unget(c);
 
 			return result * (negative ? -1.0 : 1.0);
 		}
@@ -102,6 +109,13 @@ class Input
 			ptr++;
 			if (ptr == buff+MaxInputSize)
 				ptr = buff;
+		}
+
+		static void dec(char* &ptr)
+		{
+			ptr--;
+			if (ptr<buff)
+				ptr = buff+MaxInputSize-1;
 		}
 
 		static char* buff;

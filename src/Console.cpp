@@ -16,6 +16,12 @@
 #include "Console.h"
 #include "Store.h"
 
+void pidView()
+{
+	Serial << "Pid input : " << pid_input_index << endl;
+	Serial << "Pid target: " << pid_target_value << endl;
+}
+
 void Console::Update()
 {
 	if (Serial.available())
@@ -30,40 +36,73 @@ void Console::Update()
 			}
 		}
 
-		char c = Input::getChar();
-		/////////////////////////////////////////////////////////////////////////
-		/// Blinking LED
+		char c;
 
-		// Enabled / disabled
-		if (c == 'e') blinkingLed.Enable();
-		else if (c == 'd') blinkingLed.Disable();
-
-
-		/////////////////////////////////////////////////////////////////////////
-		/// Motors
-
-		if (c == 'l')
+		while(c = Input::getChar())
 		{
-			leftMotor.parseInput();
-		}
-		else if (c == 'r')
-		{
-			rightMotor.parseInput();
-		}
+			/////////////////////////////////////////////////////////////////////////
+			/// Blinking LED
 
-		/////////////////////////////////////////////////////////////////////////
-		/// PIDs
+			// Enabled / disabled
+			if (c == 'e') blinkingLed.Enable();
+			else if (c == 'd') blinkingLed.Disable();
 
-		if (c == 'p')
-			pid.setKp(Input::getFloat());
-		else if (c == 'i')
-			pid.setKi(Input::getFloat());
-		else if (c == 'd')
-			pid.setKd(Input::getFloat());
-		else if (c == 'f')
-		{
-			Serial << "FLOAT : " << Input::getFloat() << endl;
+
+			/////////////////////////////////////////////////////////////////////////
+			/// Motors
+
+			else if (c == 'l' || c == 'm')
+			{
+				leftMotor.parseInput();
+				if (c == 'm')
+					rightMotor.setPower(leftMotor.getPower());
+			}
+			else if (c == 'r')
+			{
+				rightMotor.parseInput();
+			}
+
+			/////////////////////////////////////////////////////////////////////////
+			/// PIDs
+
+			else if (c == 'h')
+			{
+				Serial << "---[ console minihelp ]----" << endl;
+				Serial << "p# i# d# setup pid kx to #" << endl;
+				Serial << "x# : Change pid input index" << endl;
+				Serial << "t# : Change pid target value" << endl;
+				Serial << "l... r... m... setup motor:" << endl;
+				Motor::help();
+				Setup::help();
+				Serial << "I# set update interval to #" << endl << endl;
+			}
+			else if (c == 'x')
+			{
+				pid_input_index = Input::getInt();
+				pidView();
+			}
+			else if (c == 't')
+			{
+				pid_target_value = Input::getInt();
+				pidView();
+			}
+			else if (c == 'p')
+				pid.setKp(Input::getFloat());
+			else if (c == 'i')
+				pid.setKi(Input::getFloat());
+			else if (c == 'd')
+				pid.setKd(Input::getFloat());
+			else if (Setup::use(c))
+				return;
+			else if (c == 'I')
+			{
+				interval = Input::getInt();
+				fps = interval;
+				tm = millis() + interval;
+				Serial << "Interval set to " << interval << endl;
+			}
+			else
+				Serial << "Unknown command:" << c << endl;
 		}
-		Input::clear();
 	}
 }
