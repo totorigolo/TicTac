@@ -17,8 +17,6 @@
 
 #include "Store.h"
 
-void Console::Init() { }
-
 void Console::Update()
 {
     while (Serial.available() > 0)

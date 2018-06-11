@@ -16,6 +16,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "Input.h"
 
 class Motor {
 public:
@@ -25,6 +26,10 @@ public:
     void Init();
 
     void SetPower(int power);
+
+    void parseInput();
+
+    void spin(uint8_t pin1, uint8_t pin2);
 
     constexpr int Get4() { return 4; }
 

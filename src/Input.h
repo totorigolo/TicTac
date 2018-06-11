@@ -13,23 +13,52 @@
 // You should have received a copy of the GNU General Public License
 // along with TicTac.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <Arduino.h>
+#pragma once
 
-#include "Streaming.h"
-#include "Store.h"
-
-void setup()
+const int MaxInputSize = 16;
+class Input
 {
-    console.Init(57600);
-    blinkingLed.Init();
-    leftMotor.Init();
-    rightMotor.Init();
+  public:
+    
+    static void begin()
+    {
+      head=buff;
+      queue=buff;
+    }
+    
+    static add(char c)
+    {
+      inc(head);
+      *head = c;
+    }
 
-    Serial << "[TicTac] I'm ready!" << endl;
-}
+    static char getChar()
+    {
+      if (head == queue)
+        return 0;
+      inc(head);
+      return *head;  
+    }
 
-void loop()
-{
-    console.Update();
-    blinkingLed.Update();
-}
+    static int getInt()
+    {
+      int result=0;
+      bool negative = false;
+      while(getChar())
+    }
+
+  private:
+    Input() {}
+
+    static void inc(char* &ptr)
+    {
+      ptr++;
+      if (ptr == buff+MaxInputSize)
+        ptr = buff;
+    }
+
+    static char* buff;
+    static char* head;
+    static char* queue;     
+};
+

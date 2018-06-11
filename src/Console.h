@@ -21,7 +21,7 @@ class Console {
 public:
     constexpr Console() = default;
 
-    void Init();
+    inline void Init(int16_t speed) { Serial.begin(speed); }
     void Update();
 
 private:
