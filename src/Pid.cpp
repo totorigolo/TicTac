@@ -13,18 +13,4 @@
 // You should have received a copy of the GNU General Public License
 // along with TicTac.  If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include <Arduino.h>
-
-class Console {
-public:
-    constexpr Console() = default;
-
-    inline void Init(unsigned long speed) { Serial.begin(speed); }
-    void Update();
-
-private:
-    int m_motorPower = 60;
-    int m_motorDir = 1;
-};
+#include "Pid.h"

@@ -27,9 +27,29 @@ void Motor::Init()
 
 void Motor::SetPower(int power)
 {
-    digitalWrite(m_pin1, static_cast<uint8_t>(power > 0 ? HIGH : LOW));
-    digitalWrite(m_pin2, static_cast<uint8_t>(power >= 0 ? LOW : HIGH));
+  spin(power>0 ? HIGH : LOW , power>=0 ? LOW : HIGH);
+
     analogWrite(m_pinEn, abs(power));
 
-    Serial << "Motor " << m_name << ": " << power << endl;
+//    Serial << "Motor " << m_name << ": " << power << endl;
 }
+
+void Motor::spin(uint8_t pin1, uint8_t pin2)
+{
+  digitalWrite(m_pin1, pin1);
+  digitalWrite(m_pin2, pin2);
+}
+
+void Motor::parseInput()
+{
+  char c=Input::getChar();
+  if (c == '+')
+    spin(HIGH, LOW);
+  else if (c == '-')
+    spin(LOW, HIGH);
+  else if (c == '*')
+    spin(LOW, LOW);
+  else if (c>='0' && c<='9' || c=='-')
+    SetPower(Input::getInt());
+}
+

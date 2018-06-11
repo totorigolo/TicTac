@@ -20,9 +20,8 @@
 
 void setup()
 {
-    Serial.begin(57600);
-
-    console.Init();
+    console.Init(57600);
+  Input::begin();
     blinkingLed.Init();
     leftMotor.Init();
     rightMotor.Init();

@@ -15,16 +15,36 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include <Streaming.h>
 
-class Console {
-public:
-    constexpr Console() = default;
+template<class T>
+class Pid
+{
+	public:
+		Pid(T kp, T ki, T kd)
+			: m_kp(kp), m_ki(ki), m_kd(kd), m_last_error(0), m_integral(0) {}
 
-    inline void Init(unsigned long speed) { Serial.begin(speed); }
-    void Update();
+		T update(T error)
+		{
+			T d=m_last_error - error;
+			m_last_error = error;
+			m_integral += d;
+			return m_kp * error + m_ki * m_integral + m_kd * d;
+		}
 
-private:
-    int m_motorPower = 60;
-    int m_motorDir = 1;
+		void dump() const
+		{
+			Serial << "Pid (" << m_kp << ", " << m_ki << ", " << m_kd << ") I=" << m_integral << endl;
+		}
+
+		void setKp(T kp) { m_kp = kp; dump(); }
+		void setKi(T ki) { m_ki = ki; dump(); }
+		void setKd(T kd) { m_kd = kd; dump(); }
+
+	private:
+		T m_kp;
+		T m_ki;
+		T m_kd;
+		T m_last_error;
+		T m_integral;
 };
