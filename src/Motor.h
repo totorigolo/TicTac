@@ -21,11 +21,12 @@
 class Motor {
 	public:
 		constexpr Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable)
-			: m_name(name), m_pin1(pin1), m_pin2(pin2), m_pinEn(pinEnable) { }
+			: m_name(name), m_pin1(pin1), m_pin2(pin2), m_pinEn(pinEnable), last_power(9999) { }
 
 		void Init();
 
-		void SetPower(int power);
+		void setPower(int power);
+		int getPower() const { return last_power; }
 
 		void parseInput();
 
@@ -33,9 +34,12 @@ class Motor {
 
 		constexpr int Get4() { return 4; }
 
+		static void help();
+
 	private:
 		char m_name;
 		uint8_t m_pin1;
 		uint8_t m_pin2;
 		uint8_t m_pinEn;
+		int last_power;
 };
