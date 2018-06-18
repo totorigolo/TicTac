@@ -15,26 +15,42 @@
 
 cmake_minimum_required(VERSION 2.8.4)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
-project(TicTac)
 
+# Compiler parameters
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -felide-constructors -pedantic -Wall -Wextra")
+
+# Board settings
+set(ARDUINO_DEFAULT_BOARD pro)
+set(ARDUINO_DEFAULT_PORT /dev/ttyACM1)
+set(ARDUINO_CPU 16MHzatmega328)
+
+# Libraries
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
+
+# Source files listing
 set(TicTac_src
-        src/BlinkingLed.cpp
         src/Console.cpp
         src/Motor.cpp
         src/Store.cpp
+        src/Input.cpp
+        src/Setup.cpp
         src/TicTac.cpp
+        src/Pid.cpp
         )
 
 set(TicTac_hdrs
-        src/BlinkingLed.h
+        src/Persistence.h
         src/Console.h
         src/Motor.h
         src/Store.h
-        src/Streaming.h
+        src/Input.h
+        src/Setup.h
+        src/Pid.h
         )
 
+# Project
+project(TicTac)
 generate_arduino_firmware(${CMAKE_PROJECT_NAME}
         SRCS ${TicTac_src}
         HDRS ${TicTac_hdrs}
-        PORT /dev/ttyACM1
-        BOARD uno)
+        )
