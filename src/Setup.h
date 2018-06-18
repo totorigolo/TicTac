@@ -2,23 +2,76 @@
 
 #include <Arduino.h>
 #include <Streaming.h>
+#include "Object.h"
+#include "Input.h"
 
-class Setup
+class Setup : public Object
 {
-	static const uint8_t PID=1;
-	static const uint8_t FPS=2;
-	static const uint8_t REGULATION=4;
-	static const uint8_t MOTORS=8;
-	static const uint8_t ONCE=128;
-
 
 	public:
-		static bool use(char c)
+		enum Flag
+		{
+			PID=1,
+			FPS=2,
+			REGULATION=4,
+			MOTOR=8,
+			CAMERA=16,
+			SETUP=32,
+			ONCE=128
+		};
+
+	public:
+		Setup() : Object(SETUP) {}
+
+		static void dumpName(Flag flag)
+		{
+			switch(flag)
+			{
+				case PID:
+					Serial << F("PID");
+					break;
+				case CAMERA:
+					Serial << F("CAMERA");
+					break;
+				case MOTOR:
+					Serial << F("MOTOR");
+					break;
+				case SETUP:
+					Serial << F("SETUP");
+					break;
+				default:
+					Serial << '?';
+			}
+
+		}
+
+		bool parseInput(char c)
 		{
 			switch(c)
 			{
-				case 'P':
-					toggle(PID);
+				case 'x':
+					{
+						pid_input_index = Input::getInt();
+						view();
+					}
+					break;
+				case 't':
+					{
+						pid_target_value = Input::getInt();
+						view();
+					}
+				case 'I':
+					{
+						interval = Input::getInt();
+						fps = interval;
+						extern float fps;
+						tm = millis() + interval;
+						Serial << F("Interval: ") << interval << endl;
+					}
+					break;
+
+				case 'C':
+					toggle(CAMERA);
 					break;
 
 				case 'F':
@@ -26,11 +79,15 @@ class Setup
 					break;
 
 				case 'M':
-					toggle(MOTORS);
+					toggle(MOTOR);
+					break;
+
+				case 'P':
+					toggle(PID);
 					break;
 
 				case '!':
-					Serial << "Regulation : " << (toggle(REGULATION) ? "ON" : "OFF") << endl;
+					Serial << F("Regulation : ") << (toggle(REGULATION) ? "ON" : "OFF") << endl;
 					break;
 
 				case '0':
@@ -40,11 +97,10 @@ class Setup
 				case '1':
 					if (toggle(ONCE))
 						flags = 255;
-					Serial << endl;
 					break;
 
 				case 'V':
-					viewFlags();
+					view();
 					break;
 
 				default:
@@ -53,18 +109,7 @@ class Setup
 			return true;
 		}
 
-		static void help()
-		{
-			Serial << "P : toggle view pid" << endl;
-			Serial << "M : toggle view motors" << endl;
-			Serial << "F : toggle fps view" << endl;
-			Serial << "V : view flags" << endl;
-			Serial << "0 : stop all views" << endl;
-			Serial << "1 : view all once" << endl;
-			Serial << "! : toggle pid control" << endl;
-		}
-
-		static void viewFlags()
+		void view()
 		{
 			static const char* flag_name="PFRM---1";
 			uint8_t f;
@@ -86,7 +131,7 @@ class Setup
 			Serial << endl;
 		}
 
-		static bool toggle(uint8_t bit)
+		bool toggle(uint8_t bit)
 		{
 			if (flags & bit)
 				flags &= ~bit;
@@ -95,12 +140,12 @@ class Setup
 			return isFlag(bit);
 		}
 
-		static bool viewPid() { return isFlag(PID); }
-		static bool viewFps() { return isFlag(FPS); }
-		static bool pidControled() { return isFlag(REGULATION); }
-		static bool viewMotors() { return isFlag(MOTORS); }
+		bool viewPid() { return isFlag(PID); }
+		bool viewFps() { return isFlag(FPS); }
+		bool pidControled() { return isFlag(REGULATION); }
+		bool viewMotors() { return isFlag(MOTOR); }
 
-		static bool isFlag(uint8_t flag)
+		bool isFlag(uint8_t flag)
 		{
 			bool result = flags & flag;
 			if (result && (flags & ONCE))
@@ -110,8 +155,51 @@ class Setup
 			return result;
 		}
 
+		void help()
+		{
+			Serial << F(" P : toggle view pid") << endl;
+			Serial << F(" M : toggle view motors") << endl;
+			Serial << F(" F : toggle fps view") << endl;
+			Serial << F(" V : view flags") << endl;
+			Serial << F(" 0 : stop all views") << endl;
+			Serial << F(" 1 : view all once") << endl;
+			Serial << F(" ! : toggle pid control") << endl;
+			Serial << F(" I#: set update interval") << endl << endl;
+		}
+
+		bool message(Message msg, char c) override
+		{
+			switch(msg)
+			{
+				case VIEW:
+					Serial << F("Pid input : ") << pid_input_index << endl;
+					Serial << F("Pid target: ") << pid_target_value << endl;   
+					break;
+
+				case PARSE_INPUT:
+					return parseInput(c);
+
+				case HELP:
+					help();
+					break;
+
+				default:
+					return false;
+			}
+		}
+
+	public:
+		unsigned long interval;
+		float fps;
+		unsigned long tm;
+
 
 	private:
-		static uint8_t flags;
+		uint8_t flags;
+		uint8_t pid_input_index;  // index of GY85 arrray use as 'vertical' input
+		uint16_t pid_target_value;
 
 };
+
+extern Setup settings;
+

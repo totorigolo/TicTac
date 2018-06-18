@@ -16,13 +16,17 @@
 #pragma once
 
 #include <Streaming.h>
+#include "Object.h"
+#include "Input.h"
+#include "Setup.h"
 
 template<class T>
-class Pid
+class Pid : public Object
 {
 	public:
 		Pid(T kp, T ki, T kd)
-			: m_kp(kp), m_ki(ki), m_kd(kd), m_last_error(0), m_integral(0) {}
+		: Object(Setup::PID),
+			m_kp(kp), m_ki(ki), m_kd(kd), m_last_error(0), m_integral(0) {}
 
 		T update(T error)
 		{
@@ -32,14 +36,60 @@ class Pid
 			return m_kp * error + m_ki * m_integral + m_kd * d;
 		}
 
-		void dump() const
+		void setKp(T kp) { m_kp = kp; view(); }
+		void setKi(T ki) { m_ki = ki; view(); }
+		void setKd(T kd) { m_kd = kd; view(); }
+
+		// Object virtuals
+		bool parseInput(char c)
+    {
+      if (c == 'p')
+        setKp(Input::getFloat());
+      else if (c == 'i')
+        setKi(Input::getFloat());
+      else if (c == 'd')
+        setKd(Input::getFloat());
+      else
+        return false;
+    
+      return true;
+    }
+    
+
+		void view() const
 		{
-			Serial << "Pid (" << m_kp << ", " << m_ki << ", " << m_kd << ") I=" << m_integral << endl;
+			Serial << m_kp << F(", ") << m_ki << F(", ") << m_kd << F(") I=") << m_integral << endl;
 		}
 
-		void setKp(T kp) { m_kp = kp; dump(); }
-		void setKi(T ki) { m_ki = ki; dump(); }
-		void setKd(T kd) { m_kd = kd; dump(); }
+   void help() 
+   {
+  Serial << F(" p# i# d# setup kpid") << endl;
+  Serial << F(" x# : input index") << endl;
+  Serial << F(" t# : target value") << endl; 
+   }
+
+   
+    bool message(Message msg, char c)
+    {
+      switch(c)
+      {
+        case PARSE_INPUT:
+          return parseInput(c);
+          break;
+
+        case HELP:
+          help();
+          break;
+
+          case VIEW:
+            view();
+            break;
+
+        default:
+          return false;
+      }
+    }
+
 
 	private:
 		T m_kp;

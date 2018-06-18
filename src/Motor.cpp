@@ -36,8 +36,6 @@ void Motor::setPower(int power)
 
 	analogWrite(m_pinEn, abs(power));
 
-	if (Setup::viewMotors())
-		Serial << "Motor " << m_name << ": " << power << endl;
 }
 
 void Motor::spin(uint8_t pin1, uint8_t pin2)
@@ -50,27 +48,35 @@ void Motor::spin(uint8_t pin1, uint8_t pin2)
 	digitalWrite(m_pin2, pin2);
 }
 
-void Motor::parseInput()
+void Motor::help() const
 {
-	char c=Input::getChar();
-	if (c == '+')
-		spin(HIGH, LOW);
-	else if (c == '-')
-		spin(LOW, HIGH);
-	else if (c == '*')
-		spin(LOW, LOW);
-	else if (c>='0' && c<='9' || c=='-')
+	Serial << F("MOT ") << c_name << ':' << endl;
+	Serial << F(" + * - : change spin") << endl;
+	Serial << F(" nnn   : change speed") << endl;
+}
+
+
+bool Motor::parseInput(char c)
+{
+	if (c == c_name)
 	{
-		Input::unget(c);
-		setPower(Input::getInt());
+		while (c=Input::getChar())
+		{
+			if (c == '+')
+				spin(HIGH, LOW);
+			else if (c == '-')
+				spin(LOW, HIGH);
+			else if (c == '*')
+				spin(LOW, LOW);
+			else if (c>='0' && c<='9' || c=='-')
+				setPower(Input::getInt(c));
+			else
+			{
+				Input::unget(c);
+				break;
+			}
+		}
+		return true;
 	}
-	else
-		Input::unget(c);
+	return false;
 }
-
-void Motor::help()
-{
-	Serial << "  + * - : change spin" << endl;
-	Serial << "  nnn   : change speed" << endl;
-}
-
