@@ -16,28 +16,53 @@
 #pragma once
 
 #include <Arduino.h>
+#include <Streaming.h>
 #include "Input.h"
+#include "Object.h"
+#include "Setup.h"
 
-class Motor {
+class Motor : public Object
+{
 	public:
-		constexpr Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable)
-			: m_name(name), m_pin1(pin1), m_pin2(pin2), m_pinEn(pinEnable), last_power(9999) { }
+		Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable)
+			: Object(Setup::MOTOR),
+			c_name(name), m_pin1(pin1), m_pin2(pin2), m_pinEn(pinEnable), last_power(9999)
+	{
+		Init();
+	}
 
 		void Init();
 
 		void setPower(int power);
 		int getPower() const { return last_power; }
 
-		void parseInput();
-
 		void spin(uint8_t pin1, uint8_t pin2);
+		void help() const;
+		bool parseInput(char c);
 
-		constexpr int Get4() { return 4; }
+		// Object virtuals
+		bool message(Message msg, char c) override
+		{
+			switch(msg)
+			{
+				case VIEW:
+					Serial << c_name << ',' << last_power << endl;
+					break;
 
-		static void help();
+				case HELP:
+					help();
+					break;
+
+				case PARSE_INPUT:
+					return parseInput(c);
+
+				default:
+					return false;
+			}
+		}
 
 	private:
-		char m_name;
+		char c_name;
 		uint8_t m_pin1;
 		uint8_t m_pin2;
 		uint8_t m_pinEn;

@@ -36,7 +36,7 @@ class Input
 			queue=buff;
 		}
 
-		static addChar(char c)
+		static void addChar(char c)
 		{
 			inc(head);
 			*head = c;
@@ -61,15 +61,15 @@ class Input
 			return (head == queue);
 		}
 
-		static int getInt() { return static_cast<int>(getFloat()); }
+		static int getInt(char c=0) { return static_cast<int>(getFloat(c)); }
 
-		static float getFloat()
+		static float getFloat(char c=0)
 		{
 			float result = 0.0;
 			bool negative = false;
 			bool decimals = false;
 			float decimal = 0.1;
-			char c = getChar();
+			if (c == 0) c = getChar();
 			if (c == '-')
 			{
 				negative=true;
