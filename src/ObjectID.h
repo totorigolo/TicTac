@@ -13,38 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with TicTac.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "BlinkingLed.h"
+#pragma once
 
-void BlinkingLed::Init()
-{
-    pinMode(m_pin, OUTPUT);
-    digitalWrite(m_pin, LOW);
-}
+#include <Arduino.h>
 
-void BlinkingLed::Update()
-{
-    if (!m_enabled) return;
+namespace ObjectID {
 
-    unsigned long currentMillis = millis();
+enum ObjectID_t : uint8_t {
+    NONE = 0U,
+    PID = 1U << 0U,
+    FPS = 1U << 1U,
+    REGULATION = 1U << 2U,
+    MOTOR = 1U << 3U,
+    CAMERA = 1U << 4U,
+    SETUP = 1U << 5U,
+    ONCE = 1U << 6U,
+    ALL = 0xF,
+};
 
-    if (currentMillis - m_previousMs >= m_intervalMs)
-    {
-        m_previousMs = currentMillis;
-
-        m_state = !m_state;
-
-        digitalWrite(m_pin, static_cast<uint8_t>(m_state));
-    }
-}
-
-void BlinkingLed::Enable()
-{
-    digitalWrite(m_pin, LOW);
-    m_enabled = true;
-}
-
-void BlinkingLed::Disable()
-{
-    digitalWrite(m_pin, LOW);
-    m_enabled = false;
-}
+} // namespace ObjectID

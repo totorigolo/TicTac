@@ -64,7 +64,7 @@ int16_t pid_target_value=-4;
 
 Motor* leftMotor;
 Motor* rightMotor;
-Pid<float> pid(1,0, 0);
+Pid pid;
 
 void setup()
 {
@@ -153,8 +153,9 @@ void loop()
 
 
 		float pid_input = gy[pid_input_index] - (pid_target_value);
+        if (abs(pid_input) > 30) pid.resetIntegral();
 		float pid_result = pid.update(pid_input);
-		if (settings.pidControled()) setMotorsPower(pid_result);
+		if (settings.pidControlled()) setMotorsPower(pid_result);
 
 		/*
 		if (settings.viewPid())

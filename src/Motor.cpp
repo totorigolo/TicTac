@@ -17,66 +17,90 @@
 #include "Streaming.h"
 #include "Setup.h"
 
+using namespace ObjectID;
+
+Motor::Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable)
+        : Object(ObjectID_t::MOTOR),
+          c_name(name), m_pin1(pin1), m_pin2(pin2), m_pinEn(pinEnable), last_power(9999)
+{
+    Init();
+}
+
 void Motor::Init()
 {
-	pinMode(m_pin1, OUTPUT);
-	pinMode(m_pin2, OUTPUT);
-	pinMode(m_pinEn, OUTPUT);
+    pinMode(m_pin1, OUTPUT);
+    pinMode(m_pin2, OUTPUT);
+    pinMode(m_pinEn, OUTPUT);
 
-	setPower(0);
+    setPower(0);
 }
 
 void Motor::setPower(int power)
 {
-	if (power>255) power=255;
-	if (power<-255) power=-255;
-	if (last_power == power) return;
-	last_power = power;
-	spin(power>0 ? HIGH : LOW , power>=0 ? LOW : HIGH);
+    power = constrain(power, -255, 255);
+    if (last_power == power) return;
+    last_power = power;
+    spin(uint8_t(power > 0 ? HIGH : LOW), uint8_t(power >= 0 ? LOW : HIGH));
 
-	analogWrite(m_pinEn, abs(power));
-
+    analogWrite(m_pinEn, abs(power));
 }
 
 void Motor::spin(uint8_t pin1, uint8_t pin2)
 {
-	if (pin1 == HIGH)
-		last_power = abs(last_power);
-	else
-		last_power = -abs(last_power);
-	digitalWrite(m_pin1, pin1);
-	digitalWrite(m_pin2, pin2);
+    if (pin1 == HIGH)
+        last_power = abs(last_power);
+    else
+        last_power = -abs(last_power);
+    digitalWrite(m_pin1, pin1);
+    digitalWrite(m_pin2, pin2);
 }
 
 void Motor::help() const
 {
-	Serial << F("MOT ") << c_name << ':' << endl;
-	Serial << F(" + * - : change spin") << endl;
-	Serial << F(" nnn   : change speed") << endl;
+    Serial << F("MOT ") << c_name << ':' << endl;
+    Serial << F(" + * - : change spin") << endl;
+    Serial << F(" nnn   : change speed") << endl;
 }
-
 
 bool Motor::parseInput(char c)
 {
-	if (c == c_name)
-	{
-		while (c=Input::getChar())
-		{
-			if (c == '+')
-				spin(HIGH, LOW);
-			else if (c == '-')
-				spin(LOW, HIGH);
-			else if (c == '*')
-				spin(LOW, LOW);
-			else if (c>='0' && c<='9' || c=='-')
-				setPower(Input::getInt(c));
-			else
-			{
-				Input::unget(c);
-				break;
-			}
-		}
-		return true;
-	}
-	return false;
+    if (c != c_name) return false;
+
+    while ((c = Input::getChar()))
+    {
+        if (c == '+')
+            spin(HIGH, LOW);
+        else if (c == '-')
+            spin(LOW, HIGH);
+        else if (c == '*')
+            spin(LOW, LOW);
+        else if (c >= '0' && c <= '9')
+            setPower(Input::getInt(c));
+        else
+        {
+            Input::unget(c);
+            break;
+        }
+    }
+    return true;
+}
+
+uint16_t Motor::message(Object::Message msg, uint8_t& c)
+{
+    switch(msg)
+    {
+    case Message::VIEW:
+        Serial << c_name << ',' << last_power << endl;
+        break;
+
+    case Message::HELP:
+        help();
+        break;
+
+    case Message::PARSE_INPUT:
+        return parseInput(c);
+
+    default:
+        return false;
+    }
 }

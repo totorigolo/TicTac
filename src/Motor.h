@@ -17,6 +17,7 @@
 
 #include <Arduino.h>
 #include <Streaming.h>
+
 #include "Input.h"
 #include "Object.h"
 #include "Setup.h"
@@ -24,12 +25,7 @@
 class Motor : public Object
 {
 	public:
-		Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable)
-			: Object(Setup::MOTOR),
-			c_name(name), m_pin1(pin1), m_pin2(pin2), m_pinEn(pinEnable), last_power(9999)
-	{
-		Init();
-	}
+		Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable);
 
 		void Init();
 
@@ -40,26 +36,8 @@ class Motor : public Object
 		void help() const;
 		bool parseInput(char c);
 
-		// Object virtuals
-		bool message(Message msg, char c) override
-		{
-			switch(msg)
-			{
-				case VIEW:
-					Serial << c_name << ',' << last_power << endl;
-					break;
-
-				case HELP:
-					help();
-					break;
-
-				case PARSE_INPUT:
-					return parseInput(c);
-
-				default:
-					return false;
-			}
-		}
+		// Object virtual
+        uint16_t message(Message msg, uint8_t& c) override;
 
 	private:
 		char c_name;

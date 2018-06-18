@@ -20,81 +20,39 @@
 #include "Input.h"
 #include "Setup.h"
 
-template<class T>
-class Pid : public Object
-{
-	public:
-		Pid(T kp, T ki, T kd)
-		: Object(Setup::PID),
-			m_kp(kp), m_ki(ki), m_kd(kd), m_last_error(0), m_integral(0) {}
+using PidType = float;
 
-		T update(T error)
-		{
-			T d=m_last_error - error;
-			m_last_error = error;
-			m_integral += d;
-			return m_kp * error + m_ki * m_integral + m_kd * d;
-		}
+class Pid : public Object {
+public:
+    Pid();
 
-		void setKp(T kp) { m_kp = kp; view(); }
-		void setKi(T ki) { m_ki = ki; view(); }
-		void setKd(T kd) { m_kd = kd; view(); }
+    PidType update(PidType error);
 
-		// Object virtuals
-		bool parseInput(char c)
-    {
-      if (c == 'p')
-        setKp(Input::getFloat());
-      else if (c == 'i')
-        setKi(Input::getFloat());
-      else if (c == 'd')
-        setKd(Input::getFloat());
-      else
-        return false;
-    
-      return true;
-    }
-    
+    void resetIntegral();
 
-		void view() const
-		{
-			Serial << m_kp << F(", ") << m_ki << F(", ") << m_kd << F(") I=") << m_integral << endl;
-		}
+    void setKp(PidType kp);
 
-   void help() 
-   {
-  Serial << F(" p# i# d# setup kpid") << endl;
-  Serial << F(" x# : input index") << endl;
-  Serial << F(" t# : target value") << endl; 
-   }
+    void setKi(PidType ki);
 
-   
-    bool message(Message msg, char c)
-    {
-      switch(c)
-      {
-        case PARSE_INPUT:
-          return parseInput(c);
-          break;
+    void setKd(PidType kd);
 
-        case HELP:
-          help();
-          break;
+    // Object virtuals
+    bool parseInput(char c);
 
-          case VIEW:
-            view();
-            break;
+    void view() const;
 
-        default:
-          return false;
-      }
-    }
+    void help();
 
+    uint16_t message(Message msg, uint8_t& c);
 
-	private:
-		T m_kp;
-		T m_ki;
-		T m_kd;
-		T m_last_error;
-		T m_integral;
+private:
+    struct {
+        PidType m_kp = 0;
+        PidType m_ki = 0;
+        PidType m_kd = 0;
+    } m_data;
+
+private:
+    PidType m_last_error = 0;
+    PidType m_integral = 0;
 };

@@ -17,7 +17,8 @@ cmake_minimum_required(VERSION 2.8.4)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ArduinoToolchain.cmake)
 
 # Compiler parameters
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -felide-constructors -pedantic -Wall -Wextra")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -felide-constructors -pedantic -Wall -Wextra")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
 # Board settings
 set(ARDUINO_DEFAULT_BOARD pro)
@@ -29,9 +30,10 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 
 # Source files listing
 set(TicTac_src
+        src/Camera.cpp
+        src/Object.cpp
         src/Console.cpp
         src/Motor.cpp
-        src/Store.cpp
         src/Input.cpp
         src/Setup.cpp
         src/TicTac.cpp
@@ -39,10 +41,11 @@ set(TicTac_src
         )
 
 set(TicTac_hdrs
-        src/Persistence.h
+        src/ObjectID.h
+        src/Camera.h
+        src/Object.h
         src/Console.h
         src/Motor.h
-        src/Store.h
         src/Input.h
         src/Setup.h
         src/Pid.h
