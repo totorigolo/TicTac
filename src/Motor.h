@@ -30,7 +30,7 @@ class Motor : public Object
 		void Init();
 
 		void setPower(int power);
-		int getPower() const { return last_power; }
+		int getPower() const { return current_power; }
 
 		void spin(bool foward);
 		void help() const;
@@ -44,5 +44,5 @@ class Motor : public Object
 		uint8_t m_dir;
 		uint8_t m_ir;
 		uint8_t m_pinEn;
-		int last_power;
+		int current_power;
 };

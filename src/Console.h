@@ -1,55 +1,25 @@
+// This file is part of TicTac.
+//
+// TicTac is free software: you can redistribute it and/or modify
+//         it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// TicTac is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with TicTac.  If not, see <http://www.gnu.org/licenses/>.
+
 #pragma once
 
 #include "Input.h"
 #include "Object.h"
 
-class Console
-{
-	public:
-		static void loop()
-		{
-			if (Serial.available())
-			{
-				{
-					char c = Serial.read();
+namespace Console {
 
-					if (c == 8)
-					{
-						if (Input::delLast())
-							Serial << c << ' ' << c;
-						return;
-					}
-					if (!Input::full())
-						Serial << c;
-					if (c != '\r' && c != '\n')
-					{
-						Input::addChar(c);
-						return;
-					}
-				}
+void loop();
 
-				char c;
-
-				while(c = Input::getChar())
-				{
-					if (c == 'h')
-					{
-						Serial << F("---[ console minihelp ]----") << endl;
-						Object::showHelp();
-					}
-					else if (c=='L')
-						Object::listAll();
-					else
-					{
-						if (!Object::parse(c))
-						{
-							Serial << F("Unknown command:") << c << endl;
-						}
-					}
-				}
-				Serial << F("> ");
-			}
-		}
-};
-
-
+} // namespace Console

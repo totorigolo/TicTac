@@ -21,7 +21,7 @@ using namespace ObjectID;
 
 Motor::Motor(char name, uint8_t dir, uint8_t ir, uint8_t pinEnable)
         : Object(ObjectID_t::MOTOR),
-          c_name(name), m_dir(dir), m_ir(ir), m_pinEn(pinEnable), last_power(9999)
+          c_name(name), m_dir(dir), m_ir(ir), m_pinEn(pinEnable), current_power(9999)
 {
     Init();
 }
@@ -38,19 +38,19 @@ void Motor::Init()
 void Motor::setPower(int power)
 {
     power = constrain(power, -255, 255);
-    if (last_power == power) return;
-    last_power = power;
+    if (current_power == power) return;
+    current_power = power;
 
     analogWrite(m_pinEn, abs(power));
-	spin(power > 0);
+    spin(power > 0);
 }
 
 void Motor::spin(bool forward)
 {
     if (forward)
-        last_power = abs(last_power);
+        current_power = abs(current_power);
     else
-        last_power = -abs(last_power);
+        current_power = -abs(current_power);
     digitalWrite(m_dir, forward ? HIGH : LOW);
 }
 
@@ -72,7 +72,7 @@ bool Motor::parseInput(char c)
         else if (c == '-')
             spin(false);
         else if (c == '*')
-			setPower(0);
+            setPower(0);
         else if (c >= '0' && c <= '9')
             setPower(Input::getInt(c));
         else
@@ -86,11 +86,11 @@ bool Motor::parseInput(char c)
 
 uint16_t Motor::message(Object::Message msg, uint8_t& c)
 {
-    switch(msg)
+    switch (msg)
     {
     case Message::VIEW:
-		Setup::dumpName(getFlag());
-		Serial << ' ' << c_name << ':' << last_power << endl;
+        Setup::dumpName(getFlag());
+        Serial << ' ' << c_name << ':' << current_power << endl;
         break;
 
     case Message::HELP:
@@ -98,9 +98,10 @@ uint16_t Motor::message(Object::Message msg, uint8_t& c)
         break;
 
     case Message::PARSE_INPUT:
-        return parseInput(c);
+        return uint16_t(parseInput(c));
 
-    default:
-        return false;
+    case LOOP:break;
+    case GET_PERSIST_INFO:break;
     }
+    return uint16_t(false);
 }

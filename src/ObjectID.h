@@ -21,12 +21,12 @@ namespace ObjectID {
 
 enum ObjectID_t : uint8_t {
     NONE = 0U,
-    PID = 1U << 0,
-    FPS = 1U << 1,
-    REGULATION = 1U << 2,
-    MOTOR = 1U << 3,
-    CAMERA = 1U << 4,
-    SETUP = 1U << 5,
+    PID = 1U << 0U,
+    FPS = 1U << 1U,
+    REGULATION = 1U << 2U,
+    MOTOR = 1U << 3U,
+    CAMERA = 1U << 4U,
+    SETUP = 1U << 5U,
     ALL = 0xFF,
 };
 

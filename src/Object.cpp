@@ -86,22 +86,22 @@ void Object::loopAll()
 bool Object::parse(char c)
 {
     for (uint8_t i = 0; i < m_count; i++)
-	{
-		Object* object = m_objects[i];
-        if (object->message(Message::PARSE_INPUT, reinterpret_cast<uint8_t&>(c)))
+    {
+        Object* object = m_objects[i];
+        if (object->message(Message::PARSE_INPUT, reinterpret_cast<uint8_t&>(c))) // TODO: Check this reinterpret_cast<>
         {
-			
-			uint8_t size=0;
-			object->message(Message::VIEW, size);
-			object->message(Message::GET_PERSIST_INFO, size);
-			if (size)
-				persistAll();
+            uint8_t size = 0;
+            object->message(Message::VIEW, size);
+
+            size = 0;
+            object->message(Message::GET_PERSIST_INFO, size);
+            if (size)
+                persistAll();
             return true;
         }
-	}
+    }
     return false;
 }
-
 
 void Object::persistAll()
 {
@@ -109,67 +109,63 @@ void Object::persistAll()
     uint8_t size;
     for (uint8_t i = 0; i < m_count; i++)
     {
-		Object* object = m_objects[i];
-		size = 0;
+        Object* object = m_objects[i];
+
+        size = 0;
         uint8_t* data_ptr = reinterpret_cast<uint8_t*>( object->message(Message::GET_PERSIST_INFO, size));
-		if (size == 0)
-			continue;
+        if (size == 0)
+            continue;
 
-		Serial << F("Persist ");
-		Setup::dumpName(object->m_flag);
+        Serial << F("Persist ") << endl;
+        Setup::dumpName(object->m_flag);
 
-		// TODO here we assume that m_flag & size are 1 byte long
-		EEPROM.update(ptr++, object->m_flag);
-		EEPROM.update(ptr++, size);
+        static_assert(sizeof(size) == 1);
+        static_assert(sizeof(object->m_flag) == 1);
 
-		while(size)
-		{
-			Serial << ' ' << *data_ptr;
-			EEPROM.update(ptr++, *data_ptr);
-			data_ptr++;
-			size--;
-		}
-		Serial << endl;
+        EEPROM.update(ptr++, object->m_flag);
+        EEPROM.update(ptr++, size);
+
+        while (size--) EEPROM.update(ptr++, *(data_ptr++));
     }
 }
 
 void Object::restoreAll()
 {
     for (uint8_t i = 0; i < m_count; i++)
-	{
-		m_objects[i]->restore();
-	}
+    {
+        m_objects[i]->restore();
+    }
 }
 
 void Object::restore()
 {
-	uint16_t restorePtr = 0;
-	uint8_t size = 0;
+    uint16_t restorePtr = 0;
+    uint8_t size = 0;
     uint8_t* data_ptr = reinterpret_cast<uint8_t*>(message(Message::GET_PERSIST_INFO, size));
-	if (size == 0)
-		return;
+    if (size == 0)
+        return;
 
-	Serial << F("Restoring ");
-	Setup::dumpName(getFlag());
+    Serial << F("Restoring ");
+    Setup::dumpName(getFlag());
 
-	uint8_t size_check = 0;
-	ObjectID::ObjectID_t id_check;
-	EEPROM.get(restorePtr, id_check);
-	EEPROM.get(restorePtr+1, size_check);
-	if (size_check == size && id_check == m_flag)
-	{
-		restorePtr += 2;
-		while(size)
-		{
-			uint8_t b;
-			EEPROM.get(restorePtr++, b);
-			*data_ptr++ = b;
-			size--;
-		}
-		Serial << endl;
-	}
-	else
-	{
-		Serial << F(" Bad data !") << endl;
-	}
+    uint8_t size_check = 0;
+    ObjectID::ObjectID_t id_check;
+    EEPROM.get(restorePtr, id_check);
+    EEPROM.get(restorePtr + 1, size_check);
+    if (size_check == size && id_check == m_flag)
+    {
+        restorePtr += 2;
+        while (size)
+        {
+            uint8_t b;
+            EEPROM.get(restorePtr++, b);
+            *data_ptr++ = b;
+            size--;
+        }
+        Serial << endl;
+    }
+    else
+    {
+        Serial << F(" Bad data !") << endl;
+    }
 }

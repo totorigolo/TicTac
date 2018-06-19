@@ -17,125 +17,28 @@
 
 #include <Arduino.h>
 
-const int MaxInputSize = 16;
-class Input
-{
-	public:
+namespace Input {
 
-		static void begin()
-		{
-			if (buff)
-				delete[] buff;
-			buff = new char[MaxInputSize];
-			clear();
-		}
+const size_t MAX_INPUT_SIZE = 16;
 
-		static void clear()
-		{
-			head=buff;
-			queue=buff;
-		}
+void begin();
 
-		static void addChar(char c)
-		{
-			if (full())
-				return;
-			inc(head);
-			*head = c;
-		}
+void clear();
 
-		static bool full()
-		{
-			char * tst=head;
-			inc(tst);
-			return tst == queue;
-		}
+void addChar(char c);
 
-		static bool delLast()
-		{
-			if (empty()) return false;
-			dec(head);
-			return true;
-		}
+bool full();
 
-		static char getChar()
-		{
-			if (head == queue)
-				return 0;
-			inc(queue);
-			return *queue;  
-		}
+bool delLast();
 
-		static void unget(char c)
-		{
-			*queue=c;
-			dec(queue);
-		}
+char getChar();
 
-		static bool empty()
-		{
-			return (head == queue);
-		}
+void unget(char c);
 
-		static int getInt(char c=0) { return static_cast<int>(getFloat(c)); }
+bool empty();
 
-		static float getFloat(char c=0)
-		{
-			float result = 0.0;
-			bool negative = false;
-			bool decimals = false;
-			float decimal = 0.1;
-			if (c == 0) c = getChar();
-			if (c == '-')
-			{
-				negative=true;
-				c = getChar();
-			}
+int getInt(char c = 0);
 
-			while (c == '.' || c == '+' || isDigit(c))
-			{
-				if (c == '.')
-				{
-					if (decimals)
-						break;
-					decimals = true;
-				}
-				else if (decimals)
-				{
-					result += decimal * static_cast<float>(c-'0');
-					decimal *= 0.1;
-				}
-				else
-				{
-					result *=10.0;
-					result += c-'0';
-				}
-				c = getChar();
-			}
-			if (c) unget(c);
+float getFloat(char c = 0);
 
-			return result * (negative ? -1.0 : 1.0);
-		}
-
-	private:
-		Input() {}
-
-		static void inc(char* &ptr)
-		{
-			ptr++;
-			if (ptr == buff+MaxInputSize)
-				ptr = buff;
-		}
-
-		static void dec(char* &ptr)
-		{
-			ptr--;
-			if (ptr<buff)
-				ptr = buff+MaxInputSize-1;
-		}
-
-		static char* buff;
-		static char* head;
-		static char* queue;     
-};
-
+} // namespace Input

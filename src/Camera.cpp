@@ -1,5 +1,20 @@
-#include "Camera.h"
+// This file is part of TicTac.
+//
+// TicTac is free software: you can redistribute it and/or modify
+//         it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// TicTac is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with TicTac.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <TFT_ST7735.h>
+#include "Camera.h"
 
 using namespace ObjectID;
 
@@ -22,7 +37,7 @@ bool TSL1401::parseInput(char c)
 {
     if (c == 's')
     {
-        m_time = Input::getInt();
+        m_time = uint8_t(Input::getInt());
         return true;
     }
     return false;
@@ -34,7 +49,7 @@ void TSL1401::help() const
 }
 
 #if 0
-void Camera::view()
+void TSL1401::view()
 {
     static int16_t y=0;
     int16_t x=0;
@@ -61,7 +76,7 @@ void Camera::view()
 }
 #else
 
-void Camera::view()
+void TSL1401::view()
 {
     static int16_t y = 0U;
     y = (y + 1U) & 127U;
@@ -100,8 +115,6 @@ uint16_t TSL1401::message(Object::Message msg, uint8_t& c)
 
 const uint8_t* TSL1401::readData()
 {
-    static uint8_t m_data[128];
-
     SI_HIGH
     delayMicroseconds(m_time / 2);
     CLK_HIGH
@@ -111,10 +124,11 @@ const uint8_t* TSL1401::readData()
     CLK_LOW
     delayMicroseconds(m_time);
 
-    for (int pixel = 0; pixel < 128; pixel++)
+    static uint8_t m_data[128];
+    for (uint8_t& pixel : m_data)
     {
         CLK_HIGH
-        m_data[pixel] = analogRead(m_aout);
+        pixel = analogRead(m_aout);
         delayMicroseconds(m_time);
         CLK_LOW
         delayMicroseconds(m_time);

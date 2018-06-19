@@ -14,6 +14,7 @@
 // along with TicTac.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+
 #include <Arduino.h>
 #include "Object.h"
 #include "Setup.h"
