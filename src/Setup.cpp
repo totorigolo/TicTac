@@ -26,7 +26,6 @@ void Setup::dumpName(ObjectID_t flag)
     default:
         Serial << '?';
     }
-
 }
 
 bool Setup::parseInput(char c)
@@ -78,9 +77,8 @@ bool Setup::parseInput(char c)
         flags = ObjectID_t::NONE;
         break;
 
-    case '1':
-        if (toggle(ObjectID_t::ONCE))
-            flags = ObjectID_t::ALL;
+    case '*':
+        once = ObjectID_t::ALL;
         break;
 
     case 'V':
@@ -134,10 +132,10 @@ bool Setup::viewMotors() { return isFlag(ObjectID_t::MOTOR); }
 
 bool Setup::isFlag(ObjectID_t flag)
 {
-    auto result = bool(flags & flag);
-    if (result && (flags & ObjectID_t::ONCE))
+    auto result = bool((flags | once) & flag);
+    if (result)
     {
-        toggle(flag);
+		once &= ~flag;
     }
     return result;
 }
@@ -149,7 +147,7 @@ void Setup::help()
     Serial << F(" F : toggle fps view") << endl;
     Serial << F(" V : view flags") << endl;
     Serial << F(" 0 : stop all views") << endl;
-    Serial << F(" 1 : view all once") << endl;
+    Serial << F(" * : view all once") << endl;
     Serial << F(" ! : toggle pid control") << endl;
     Serial << F(" I#: set update interval") << endl << endl;
 }

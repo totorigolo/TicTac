@@ -13,6 +13,14 @@ class Console
 				{
 					char c = Serial.read();
 
+					if (c == 8)
+					{
+						if (Input::delLast())
+							Serial << c << ' ' << c;
+						return;
+					}
+					if (!Input::full())
+						Serial << c;
 					if (c != '\r' && c != '\n')
 					{
 						Input::addChar(c);
@@ -39,6 +47,7 @@ class Console
 						}
 					}
 				}
+				Serial << F("> ");
 			}
 		}
 };

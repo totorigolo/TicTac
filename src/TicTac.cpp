@@ -68,9 +68,10 @@ Pid pid;
 
 void setup()
 {
-	leftMotor = new Motor('L', 5, 7, 6);
-	rightMotor = new Motor('R', 2, 4, 3);
 	Serial.begin(57600);
+	
+	leftMotor = new Motor('l', 6, 3, 7);
+	rightMotor = new Motor('r', 5, 2, 4);
 
 	Input::begin();
 
@@ -90,8 +91,9 @@ void setup()
 
 	// tft.begin();
 
-  Object::listAll();
-	Serial << F("[TicTac] ready!") << endl;
+	Object::restoreAll();
+  	Object::listAll();
+	Serial << F("[TicTac] ready!") << endl << F("> ");
 }
 
 void setMotorsPower(int power)

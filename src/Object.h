@@ -52,6 +52,12 @@ public:
     static void listAll();
 
     static void persistAll();
+	static void restoreAll();
+
+	ObjectID::ObjectID_t getFlag() const { return m_flag; }
+
+private:
+	void restore();
 
 private:
     ObjectID::ObjectID_t m_flag;

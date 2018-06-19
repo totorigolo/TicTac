@@ -56,6 +56,7 @@ public:
 
 private:
     ObjectID::ObjectID_t flags = ObjectID::NONE;
+	ObjectID::ObjectID_t once = ObjectID::NONE;
     uint8_t pid_input_index = 0U;  // index of GY85 array use as 'vertical' input
     uint16_t pid_target_value = 0U;
 };

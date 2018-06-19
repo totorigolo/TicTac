@@ -19,17 +19,17 @@
 
 using namespace ObjectID;
 
-Motor::Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable)
+Motor::Motor(char name, uint8_t dir, uint8_t ir, uint8_t pinEnable)
         : Object(ObjectID_t::MOTOR),
-          c_name(name), m_pin1(pin1), m_pin2(pin2), m_pinEn(pinEnable), last_power(9999)
+          c_name(name), m_dir(dir), m_ir(ir), m_pinEn(pinEnable), last_power(9999)
 {
     Init();
 }
 
 void Motor::Init()
 {
-    pinMode(m_pin1, OUTPUT);
-    pinMode(m_pin2, OUTPUT);
+    pinMode(m_dir, OUTPUT);
+    pinMode(m_ir, INPUT);
     pinMode(m_pinEn, OUTPUT);
 
     setPower(0);
@@ -40,24 +40,23 @@ void Motor::setPower(int power)
     power = constrain(power, -255, 255);
     if (last_power == power) return;
     last_power = power;
-    spin(uint8_t(power > 0 ? HIGH : LOW), uint8_t(power >= 0 ? LOW : HIGH));
 
     analogWrite(m_pinEn, abs(power));
+	spin(power > 0);
 }
 
-void Motor::spin(uint8_t pin1, uint8_t pin2)
+void Motor::spin(bool forward)
 {
-    if (pin1 == HIGH)
+    if (forward)
         last_power = abs(last_power);
     else
         last_power = -abs(last_power);
-    digitalWrite(m_pin1, pin1);
-    digitalWrite(m_pin2, pin2);
+    digitalWrite(m_dir, forward ? HIGH : LOW);
 }
 
 void Motor::help() const
 {
-    Serial << F("MOT ") << c_name << ':' << endl;
+    Serial << F(" [Motor ") << c_name << ']' << endl;
     Serial << F(" + * - : change spin") << endl;
     Serial << F(" nnn   : change speed") << endl;
 }
@@ -69,11 +68,11 @@ bool Motor::parseInput(char c)
     while ((c = Input::getChar()))
     {
         if (c == '+')
-            spin(HIGH, LOW);
+            spin(true);
         else if (c == '-')
-            spin(LOW, HIGH);
+            spin(false);
         else if (c == '*')
-            spin(LOW, LOW);
+			setPower(0);
         else if (c >= '0' && c <= '9')
             setPower(Input::getInt(c));
         else
@@ -90,7 +89,8 @@ uint16_t Motor::message(Object::Message msg, uint8_t& c)
     switch(msg)
     {
     case Message::VIEW:
-        Serial << c_name << ',' << last_power << endl;
+		Setup::dumpName(getFlag());
+		Serial << ' ' << c_name << ':' << last_power << endl;
         break;
 
     case Message::HELP:

@@ -25,14 +25,14 @@
 class Motor : public Object
 {
 	public:
-		Motor(char name, uint8_t pin1, uint8_t pin2, uint8_t pinEnable);
+		Motor(char name, uint8_t dir, uint8_t ir, uint8_t pinEnable);
 
 		void Init();
 
 		void setPower(int power);
 		int getPower() const { return last_power; }
 
-		void spin(uint8_t pin1, uint8_t pin2);
+		void spin(bool foward);
 		void help() const;
 		bool parseInput(char c);
 
@@ -41,8 +41,8 @@ class Motor : public Object
 
 	private:
 		char c_name;
-		uint8_t m_pin1;
-		uint8_t m_pin2;
+		uint8_t m_dir;
+		uint8_t m_ir;
 		uint8_t m_pinEn;
 		int last_power;
 };

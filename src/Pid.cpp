@@ -67,7 +67,8 @@ bool Pid::parseInput(char c)
 
 void Pid::view() const
 {
-    Serial << m_data.m_kp << F(", ") << m_data.m_ki << F(", ") << m_data.m_kd << F(") I=") << m_integral << endl;
+	Setup::dumpName(getFlag());
+    Serial << '(' << m_data.m_kp << F(", ") << m_data.m_ki << F(", ") << m_data.m_kd << F(") I=") << m_integral << endl;
 }
 
 void Pid::help()
@@ -79,7 +80,7 @@ void Pid::help()
 
 uint16_t Pid::message(Object::Message msg, uint8_t& c)
 {
-    switch (c)
+    switch (msg)
     {
     case Message::PARSE_INPUT:
         return uint16_t(parseInput(c));

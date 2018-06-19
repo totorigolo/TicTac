@@ -38,8 +38,24 @@ class Input
 
 		static void addChar(char c)
 		{
+			if (full())
+				return;
 			inc(head);
 			*head = c;
+		}
+
+		static bool full()
+		{
+			char * tst=head;
+			inc(tst);
+			return tst == queue;
+		}
+
+		static bool delLast()
+		{
+			if (empty()) return false;
+			dec(head);
+			return true;
 		}
 
 		static char getChar()
