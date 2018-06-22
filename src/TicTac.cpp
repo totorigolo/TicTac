@@ -26,6 +26,7 @@
 
 #include "Motor.h"
 #include "Pid.h"
+#include "DigitalOscillo.h"
 
 GY_85 GY85;
 
@@ -40,7 +41,7 @@ TFT_ST7735 tft = TFT_ST7735(__CS1, __DC);
 #define _BARWIDTH   10
 #define _BARSPACE   2
 
-Camera camera(2,3,A0);
+//Camera camera(2,3,A0);
 
 /*
    if color = 0 it will create a value sensitive spectrum color
@@ -65,6 +66,9 @@ int16_t pid_target_value=-4;
 Motor* leftMotor;
 Motor* rightMotor;
 Pid pid;
+
+// Left fork
+DigitalOscillo oscillo(2, A1);
 
 void setup()
 {
@@ -103,6 +107,12 @@ void setMotorsPower(int power)
 }
 
 void loop()
+{
+    Console::loop();
+    Object::loopAll();
+}
+
+void true_loop()
 {
 	Console::loop();
 	static int16_t gy[9];
@@ -167,8 +177,8 @@ void loop()
 		}
 		*/
 
-		Object::viewAll();
-		camera.view();
+//		Object::viewAll();
+		Object::loopAll();
 
 		if (settings.viewFps())
 		{

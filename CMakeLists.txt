@@ -30,6 +30,7 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 
 # Source files listing
 set(TicTac_src
+        src/DigitalOscillo.cpp
         src/Camera.cpp
         src/Object.cpp
         src/Console.cpp
@@ -42,6 +43,7 @@ set(TicTac_src
 
 set(TicTac_hdrs
         src/ObjectID.h
+        src/DigitalOscillo.h
         src/Camera.h
         src/Object.h
         src/Console.h

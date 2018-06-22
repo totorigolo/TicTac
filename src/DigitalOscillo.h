@@ -16,19 +16,29 @@
 #pragma once
 
 #include <Arduino.h>
+#include "Object.h"
+#include "Setup.h"
 
-namespace ObjectID {
+class DigitalOscillo : public Object {
+public:
+    DigitalOscillo(uint8_t pin1, uint8_t pin2);
 
-enum ObjectID_t : uint8_t {
-    NONE = 0U,
-    PID = 1U << 0U,
-    FPS = 1U << 1U,
-    REGULATION = 1U << 2U,
-    MOTOR = 1U << 3U,
-    CAMERA = 1U << 4U,
-    SETUP = 1U << 5U,
-    OSCILLO = 1U << 6U,
-    ALL = 0xFF,
+    // Object virtuals
+    bool parseInput(char c);
+
+    void help() const;
+
+    void view();
+
+    void loop();
+
+    uint16_t message(Message msg, uint8_t& c) override;
+
+private:
+    uint8_t m_pin1;
+    uint8_t m_pin2;
+    uint16_t m_x;
+    bool m_last_pin1;
+    unsigned long m_next_micro;
+    unsigned long m_period = 50000;
 };
-
-} // namespace ObjectID
