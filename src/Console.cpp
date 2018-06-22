@@ -15,14 +15,16 @@
 
 #include "Console.h"
 
+static const char BACK = 8;
+
 void Console::loop()
 {
-    char c;
     if (Serial.available())
     {
         // Feed Input
-        c = char(Serial.read());
-        if (c == 8) // FIXME: Magic constant?
+        char c = char(Serial.read());
+        Serial << "CHAR " << (int)c << endl;
+        if (c == BACK)
         {
             if (Input::delLast())
                 Serial << c << ' ' << c;

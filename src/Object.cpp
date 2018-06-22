@@ -51,10 +51,12 @@ void Object::showHelp()
     uint8_t unused;
     for (uint8_t i = 0; i < m_count; i++)
     {
+        Object* object(m_objects[i]);
+        
         Serial << F("Help for ");
-        Setup::dumpName(m_objects[i]->m_flag);
+        Setup::dumpName(object->m_flag);
         Serial << endl;
-        m_objects[i]->message(Message::HELP, unused);
+        object->message(Message::HELP, unused);
     }
 }
 
@@ -116,19 +118,18 @@ void Object::persistAll()
         if (size == 0)
             continue;
 
-		Serial << F("Persist ");
+        Serial << F("Persist ");
         Setup::dumpName(object->m_flag);
 
-	// Does not compile with arduino IDE (And I want it to !)
-        // static_assert(sizeof(size) == 1);
-        // static_assert(sizeof(object->m_flag) == 1);
+        //static_assert(sizeof(size) == 1);
+        //static_assert(sizeof(object->m_flag) == 1);
 
         EEPROM.update(ptr++, object->m_flag);
         EEPROM.update(ptr++, size);
 
         while (size--) EEPROM.update(ptr++, *(data_ptr++));
 
-	Serial << endl;
+        Serial << endl;
     }
 }
 

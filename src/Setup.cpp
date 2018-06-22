@@ -23,6 +23,9 @@ void Setup::dumpName(ObjectID_t flag)
     case ObjectID_t::SETUP:
         Serial << F("SETUP");
         break;
+    case ObjectID_t::OSCILLO:
+        Serial << F("OSCILLO");
+        break;
     default:
         Serial << '?';
     }
@@ -67,6 +70,10 @@ bool Setup::parseInput(char c)
 
     case 'P':
         toggle(ObjectID_t::PID);
+        break;
+
+    case 'O':
+        toggle(ObjectID_t::OSCILLO);
         break;
 
     case '!':
@@ -149,7 +156,7 @@ void Setup::help()
     Serial << F(" 0 : stop all views") << endl;
     Serial << F(" * : view all once") << endl;
     Serial << F(" ! : toggle pid control") << endl;
-    Serial << F(" I#: set update interval") << endl << endl;
+    Serial << F(" I#: set update interval") << endl;
 }
 
 uint16_t Setup::message(Object::Message msg, uint8_t& c)
