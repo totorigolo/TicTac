@@ -116,16 +116,19 @@ void Object::persistAll()
         if (size == 0)
             continue;
 
-        Serial << F("Persist ") << endl;
+		Serial << F("Persist ");
         Setup::dumpName(object->m_flag);
 
-        static_assert(sizeof(size) == 1);
-        static_assert(sizeof(object->m_flag) == 1);
+	// Does not compile with arduino IDE (And I want it to !)
+        // static_assert(sizeof(size) == 1);
+        // static_assert(sizeof(object->m_flag) == 1);
 
         EEPROM.update(ptr++, object->m_flag);
         EEPROM.update(ptr++, size);
 
         while (size--) EEPROM.update(ptr++, *(data_ptr++));
+
+	Serial << endl;
     }
 }
 

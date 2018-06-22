@@ -17,28 +17,125 @@
 
 #include <Arduino.h>
 
-namespace Input {
+const int MaxInputSize = 16;
+class Input
+{
+	public:
 
-const size_t MAX_INPUT_SIZE = 16;
+		static void begin()
+		{
+			if (buff)
+				delete[] buff;
+			buff = new char[MaxInputSize];
+			clear();
+		}
 
-void begin();
+		static void clear()
+		{
+			head=buff;
+			queue=buff;
+		}
 
-void clear();
+		static void addChar(char c)
+		{
+			if (full())
+				return;
+			inc(head);
+			*head = c;
+		}
 
-void addChar(char c);
+		static bool full()
+		{
+			char * tst=head;
+			inc(tst);
+			return tst == queue;
+		}
 
-bool full();
+		static bool delLast()
+		{
+			if (empty()) return false;
+			dec(head);
+			return true;
+		}
 
-bool delLast();
+		static char getChar()
+		{
+			if (head == queue)
+				return 0;
+			inc(queue);
+			return *queue;  
+		}
 
-char getChar();
+		static void unget(char c)
+		{
+			*queue=c;
+			dec(queue);
+		}
 
-void unget(char c);
+		static bool empty()
+		{
+			return (head == queue);
+		}
 
-bool empty();
+		static int getInt(char c=0) { return static_cast<int>(getFloat(c)); }
 
-int getInt(char c = 0);
+		static float getFloat(char c=0)
+		{
+			float result = 0.0;
+			bool negative = false;
+			bool decimals = false;
+			float decimal = 0.1;
+			if (c == 0) c = getChar();
+			if (c == '-')
+			{
+				negative=true;
+				c = getChar();
+			}
 
-float getFloat(char c = 0);
+			while (c == '.' || c == '+' || isDigit(c))
+			{
+				if (c == '.')
+				{
+					if (decimals)
+						break;
+					decimals = true;
+				}
+				else if (decimals)
+				{
+					result += decimal * static_cast<float>(c-'0');
+					decimal *= 0.1;
+				}
+				else
+				{
+					result *=10.0;
+					result += c-'0';
+				}
+				c = getChar();
+			}
+			if (c) unget(c);
 
-} // namespace Input
+			return result * (negative ? -1.0 : 1.0);
+		}
+
+	private:
+		Input() {}
+
+		static void inc(char* &ptr)
+		{
+			ptr++;
+			if (ptr == buff+MaxInputSize)
+				ptr = buff;
+		}
+
+		static void dec(char* &ptr)
+		{
+			ptr--;
+			if (ptr<buff)
+				ptr = buff+MaxInputSize-1;
+		}
+
+		static char* buff;
+		static char* head;
+		static char* queue;     
+};
+
