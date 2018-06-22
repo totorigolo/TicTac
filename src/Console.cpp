@@ -28,20 +28,22 @@ void Console::loop()
                 Serial << c << ' ' << c;
             return;
         }
-        if (!Input::full())
-            Serial << c;
+        if (Input::full()) return;
+
         if (c != '\r' && c != '\n')
         {
+            Serial << c;
             Input::addChar(c);
             return;
         }
+        Serial << endl;
 
         // Consume from Input
         while ((c = Input::getChar()))
         {
             if (c == 'h')
             {
-                Serial << F("---[ console minihelp ]----") << endl;
+                Serial << endl;
                 Object::showHelp();
             }
             else if (c == 'L')
