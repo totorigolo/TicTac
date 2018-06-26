@@ -67,6 +67,7 @@ void DigitalOscillo::view()
 {
   Serial << "Ech : " << m_data.period_ech << endl;
   Serial << "Trig: " << (char)m_data.trigger << endl;
+  Serial << "Per : " << m_period << endl;
 }
 
 bool DigitalOscillo::triggered(bool pin1)
@@ -97,7 +98,7 @@ void DigitalOscillo::loop()
   auto current_time = timer();
   if (current_time < m_next_ech) return;
 
-  m_next_ech += m_data.period_ech;
+  m_next_ech += abs(m_data.period_ech);
 
   bool pin1 = digitalRead(m_pin1) == HIGH;
   bool pin2 = digitalRead(m_pin2) == HIGH;
@@ -105,11 +106,18 @@ void DigitalOscillo::loop()
   if (triggered(pin1))
   {
     m_period = current_time - m_last_trigger_time;
-    Serial << "Osc period=" << m_period << endl;
+    if (m_data.period_ech < 0 && (m_period>0))
+    {
+        m_data.period_ech = - 3 * (int32_t)m_period / (int32_t)WIDTH;
+        if (m_data.period_ech == 0)
+            m_data.period_ech = -1;
+    }
     m_last_trigger_time = current_time;
     if (m_x == 0)
     {
       m_x = WIDTH;
+      Serial << "Period : " << m_period << ' ';
+      Serial << (float)timer_resolution/(float)m_period/(float)holes_count << "Hz" << endl;
     }
   }
 

@@ -23,7 +23,6 @@ void Console::loop()
     {
         // Feed Input
         char c = char(Serial.read());
-        Serial << "CHAR " << (int)c << endl;
         if (c == BACK)
         {
             if (Input::delLast())

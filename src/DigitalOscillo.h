@@ -21,7 +21,8 @@
 
 class DigitalOscillo : public Object
 {
-  const uint16_t timer_resolution = 1000; // Nbr of timer() ticks for 1 sec
+  const uint16_t holes_count = 20;    // Nbre of holes in motor disk sensor
+  const uint32_t timer_resolution = 1000000; // Nbr of timer() ticks for 1 sec
   public:
     typedef enum Triggers
     {
@@ -49,7 +50,7 @@ public:
 
     uint16_t getPeriod() const { return m_period; }
 
-    static unsigned long timer() { return millis(); }
+    static unsigned long timer() { return micros(); }
 
 private:
     uint8_t m_pin1;
@@ -62,7 +63,7 @@ private:
 
     struct
     {
-      uint32_t period_ech = 50;
+      int32_t period_ech = -50;     // <0 => Auto, >0 manual
       TriggerType trigger = Raise;
     } m_data;
 };

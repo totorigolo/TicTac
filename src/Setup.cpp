@@ -36,24 +36,25 @@ bool Setup::parseInput(char c)
     switch (c)
     {
     case 'x':
-    {
-        pid_input_index = Input::getInt();
-        view();
-    }
+        {
+            pid_input_index = Input::getInt();
+            view();
+        }
         break;
     case 't':
-    {
-        pid_target_value = Input::getInt();
-        view();
-    }
+        {
+            pid_target_value = Input::getInt();
+            view();
+        }
+        break;
     case 'I':
-    {
-        interval = Input::getInt();
-        fps = interval;
-        extern float fps;
-        tm = millis() + interval;
-        Serial << F("Interval: ") << interval << endl;
-    }
+        {
+            interval = Input::getInt();
+            fps = interval;
+            extern float fps;
+            tm = millis() + interval;
+            Serial << F("Interval: ") << interval << endl;
+        }
         break;
 
     case 'C':
@@ -178,4 +179,5 @@ uint16_t Setup::message(Object::Message msg, uint8_t& c)
     default:
         return false;
     }
+    return true;
 }

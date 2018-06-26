@@ -90,7 +90,7 @@ bool Object::parse(char c)
     for (uint8_t i = 0; i < m_count; i++)
     {
         Object* object = m_objects[i];
-        if (object->message(Message::PARSE_INPUT, reinterpret_cast<uint8_t&>(c))) // TODO: Check this reinterpret_cast<>
+        if (object->message(Message::PARSE_INPUT, reinterpret_cast<uint8_t&>(c)))
         {
             uint8_t size = 0;
             object->message(Message::VIEW, size);
