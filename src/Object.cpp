@@ -121,6 +121,7 @@ void Object::persistAll()
         Serial << F("Persist ");
         Setup::dumpName(object->m_flag);
 
+        // TODO: Enclose in #if guards
         //static_assert(sizeof(size) == 1);
         //static_assert(sizeof(object->m_flag) == 1);
 

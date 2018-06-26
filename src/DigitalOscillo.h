@@ -19,18 +19,16 @@
 #include "Object.h"
 #include "Setup.h"
 
-class DigitalOscillo : public Object
-{
-  const uint16_t holes_count = 20;    // Nbre of holes in motor disk sensor
-  const uint32_t timer_resolution = 1000000; // Nbr of timer() ticks for 1 sec
-  public:
-    typedef enum Triggers
-    {
-      FallDown = 'F',
-      Raise    = 'R',
-      Low      = '0',
-      High     = '1'
-    } TriggerType;
+class DigitalOscillo : public Object {
+    const uint16_t holes_count = 20;    // Nbre of holes in motor disk sensor
+    const uint32_t timer_resolution = 1000000; // Nbr of timer() ticks for 1 sec
+public:
+    enum TriggerType : char {
+        FallDown = 'F',
+        Raise = 'R',
+        Low = '0',
+        High = '1'
+    };
 
 public:
     DigitalOscillo(uint8_t pin1, uint8_t pin2);
@@ -48,9 +46,9 @@ public:
 
     bool triggered(bool pin);
 
-    uint16_t getPeriod() const { return m_period; }
+    uint32_t getPeriod() const { return m_period; }
 
-    static unsigned long timer() { return micros(); }
+    static uint32_t timer() { return micros(); }
 
 private:
     uint8_t m_pin1;
@@ -58,12 +56,11 @@ private:
     uint16_t m_x;
     bool m_last_pin1;
     uint32_t m_next_ech;
-    uint16_t m_period;
+    uint32_t m_period;
     uint32_t m_last_trigger_time;
 
-    struct
-    {
-      int32_t period_ech = -50;     // <0 => Auto, >0 manual
-      TriggerType trigger = Raise;
+    struct {
+        int32_t period_ech = -50;     // <0 => Auto, >0 manual
+        TriggerType trigger = Raise;
     } m_data;
 };
