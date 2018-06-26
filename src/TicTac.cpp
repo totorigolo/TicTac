@@ -68,12 +68,14 @@ Motor* rightMotor;
 Pid pid;
 
 // Left fork
+// 2 bleu haut
+// A1 rouge bas
 DigitalOscillo oscillo(2, A1);
 
 void setup()
 {
 	Serial.begin(57600);
-	
+
 	leftMotor = new Motor('l', 6, 3, 7);
 	rightMotor = new Motor('r', 5, 2, 4);
 

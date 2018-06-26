@@ -21,6 +21,7 @@
 
 using namespace ObjectID;
 
+uint16_t Object::restorePtr = 0;
 uint8_t Object::m_count = 0;
 Object* Object::m_objects[Object::MAX_OBJECTS];
 
@@ -52,7 +53,7 @@ void Object::showHelp()
     for (uint8_t i = 0; i < m_count; i++)
     {
         Object* object(m_objects[i]);
-        
+
         Serial << F("Help for ");
         Setup::dumpName(object->m_flag);
         Serial << endl;
@@ -136,6 +137,7 @@ void Object::persistAll()
 
 void Object::restoreAll()
 {
+    restorePtr = 0;
     for (uint8_t i = 0; i < m_count; i++)
     {
         m_objects[i]->restore();
@@ -144,7 +146,6 @@ void Object::restoreAll()
 
 void Object::restore()
 {
-    uint16_t restorePtr = 0;
     uint8_t size = 0;
     uint8_t* data_ptr = reinterpret_cast<uint8_t*>(message(Message::GET_PERSIST_INFO, size));
     if (size == 0)

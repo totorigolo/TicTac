@@ -60,6 +60,7 @@ private:
 	void restore();
 
 private:
+    static uint16_t restorePtr;
     ObjectID::ObjectID_t m_flag;
 
     static uint8_t m_count;    // -1 => not initialized
