@@ -15,43 +15,16 @@
 
 #pragma once
 
-#include <Streaming.h>
 #include "Object.h"
-#include "Input.h"
-#include "Setup.h"
 
-using PidType = float;
+class Fps : public Object
+{
+    public:
+        Fps();
 
-class Pid : public Object {
-public:
-    Pid();
+        virtual void message(Message& msg) override;
 
-    PidType update(PidType error);
-
-    void resetIntegral();
-
-    void setKp(PidType kp);
-
-    void setKi(PidType ki);
-
-    void setKd(PidType kd);
-
-    Message::Answer parseInput(char c);
-
-    void view() const;
-
-    void help();
-
-    void message(Message& msg);
-
-private:
-    struct {
-        PidType m_kp = 0;
-        PidType m_ki = 0;
-        PidType m_kd = 0;
-    } m_data;
-
-private:
-    PidType m_last_error = 0;
-    PidType m_integral = 0;
+     private:
+        float fps;
 };
+

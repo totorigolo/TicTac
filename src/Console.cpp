@@ -51,7 +51,7 @@ void Console::loop()
                 Object::listAll();
             else
             {
-                if (!Object::parse(c))
+                if (Object::parse(c) == Message::Unprocessed)
                 {
                     Serial << F("Unknown command:") << c << endl;
                 }

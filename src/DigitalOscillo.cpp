@@ -28,21 +28,23 @@ const uint16_t HIGH_1 = 100;
 const uint16_t HIGH_2 = HIGH_1 + SPACE_12;
 
 DigitalOscillo::DigitalOscillo(uint8_t pin1, uint8_t pin2)
-        : Object(ObjectID_t::OSCILLO),
+        : Object(OSCILLO),
           chan_1(pin1, BLUE), chan_2(pin2, RED), m_x(WIDTH)
 {
+    m_next_ech = timer();
 }
 
 void DigitalOscillo::reset()
 {
-    m_next_ech = timer();
     m_x = 0;
     tft.fillScreen(BLACK);
+    m_next_ech = timer();
 }
 
-bool DigitalOscillo::parseInput(char c)
+Message::Answer DigitalOscillo::parseInput(char c)
 {
-    if (c != 'o') return false;
+    if (c != 'o') return Message::Unprocessed;
+
     c = Input::getChar();
     reset();
 
@@ -52,7 +54,7 @@ bool DigitalOscillo::parseInput(char c)
         {
             int32_t p=Input::getInt();
             if (p) m_data.period_ech = p;
-            return true;
+            return Message::Processed;
         }
 
     case 't':
@@ -60,32 +62,34 @@ bool DigitalOscillo::parseInput(char c)
         if (c == FallDown || c == Raise || c == High || c == Low)
         {
             m_data.trigger = (Channel_2 & 0x80) | c;
-            return true;
+            return Message::Processed;
         }
         else if (c == '1')
         {
             m_data.trigger &= ~Channel_2;
-            return true;
+            return Message::Processed;
         }
         else if (c == '2')
         {
             m_data.trigger |= Channel_2;
-            return true;
+            return Message::Processed;
         }
         break;
 
     case 'l':   // Assign to left motor
         chan_1.pin = 2; // TODO magics (should be taken from Ir
         chan_2.pin = A1;
-        return true;
+            return Message::Processed;
+
     case 'r':
         chan_1.pin = 3;
         chan_2.pin = A2;
-        return true;
+            return Message::Processed;
+
     default:
         Input::unget(c);
     }
-    return false;
+    return Message::Unprocessed;
 }
 
 void DigitalOscillo::help() const
@@ -132,22 +136,25 @@ bool DigitalOscillo::Channel::triggered(DigitalOscillo::TriggerType trigger, uin
 
     switch (trigger)
     {
-    case FallDown:
-        ret = last_state && !current_state;
-        cyclic_trigger = !last_state && current_state;
-        break;
-    case Raise:
-        ret = !last_state && current_state;
-        cyclic_trigger = last_state && !current_state;
-        break;
-    case Low:
-        ret = !current_state;
-        cyclic_trigger = current_state;
-        break;
-    case High:
-        ret = current_state;
-        cyclic_trigger = !current_state;
-        break;
+        case FallDown:
+            ret = last_state && !current_state;
+            cyclic_trigger = !last_state && current_state;
+            break;
+
+        case Raise:
+            ret = !last_state && current_state;
+            cyclic_trigger = last_state && !current_state;
+            break;
+
+        case Low:
+            ret = !current_state;
+            cyclic_trigger = current_state;
+            break;
+
+        case High:
+            ret = current_state;
+            cyclic_trigger = !current_state;
+            break;
     }
 
     tft.drawPixel(x, (last_state ? LOW_1 : HIGH_1) + pin, BLACK);
@@ -197,7 +204,6 @@ void DigitalOscillo::loop()
     Channel* trigger_channel;
 
     TriggerType trigger = m_data.trigger & ~Channel_2;
-    bool on_trigger;
 
     if (m_data.trigger & Channel_2)
     {
@@ -249,31 +255,34 @@ void DigitalOscillo::loop()
     }
 }
 
-uint16_t DigitalOscillo::message(Object::Message msg, uint8_t& c)
+void DigitalOscillo::message(Message& msg)
 {
-    switch (msg)
+    switch (msg.type)
     {
-    case Message::PARSE_INPUT:
-        return uint16_t(parseInput(c));
+    case Message::ParseInput:
+        msg.answer = parseInput(msg.c);
+        return;
 
-    case Message::VIEW:
+    case Message::View:
         view();
         break;
 
-    case Message::LOOP:
+    case Message::Loop:
         loop();
         break;
 
-    case Message::HELP:
+    case Message::Help:
         help();
         break;
 
-    case Message::GET_PERSIST_INFO:
-        c = static_cast<Message>(sizeof(m_data));
-        return &m_data;
+    case Message::PersistInfo:
+        msg.size = (uint8_t)(sizeof(m_data));
+        msg.data_ptr = &m_data;
+        return;
 
     default:
-        return uint16_t(false);
+        msg.answer = Message::Unprocessed;
+        return;
     }
-    return uint16_t(true);
+    msg.answer = Message::Processed;
 }

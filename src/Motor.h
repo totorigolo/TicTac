@@ -34,10 +34,10 @@ class Motor : public Object
 
 		void spin(bool foward);
 		void help() const;
-		bool parseInput(char c);
+		Message::Answer parseInput(char c);
 
 		// Object virtual
-        uint16_t message(Message msg, uint8_t& c) override;
+        void message(Message& msg) override;
 
 	private:
 		char c_name;

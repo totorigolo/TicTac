@@ -17,8 +17,7 @@
 
 using namespace ObjectID;
 
-Pid::Pid()
-        : Object(ObjectID_t::PID) { }
+Pid::Pid() : Object(PID) { }
 
 PidType Pid::update(PidType error)
 {
@@ -51,7 +50,7 @@ void Pid::setKd(PidType kd)
     view();
 }
 
-bool Pid::parseInput(char c)
+Message::Answer Pid::parseInput(char c)
 {
     if (c == 'p')
         setKp(Input::getFloat());
@@ -60,9 +59,9 @@ bool Pid::parseInput(char c)
     else if (c == 'd')
         setKd(Input::getFloat());
     else
-        return false;
+        return Message::Unprocessed;
 
-    return true;
+    return Message::Processed;
 }
 
 void Pid::view() const
@@ -78,28 +77,31 @@ void Pid::help()
     Serial << F(" t# : target value") << endl;
 }
 
-uint16_t Pid::message(Object::Message msg, uint8_t& c)
+void Pid::message(Message& msg)
 {
-    switch (msg)
+    switch (msg.type)
     {
-    case Message::PARSE_INPUT:
-        return uint16_t(parseInput(c));
+        case Message::ParseInput:
+            msg.answer = parseInput(msg.c);
+            return;
 
-    case Message::HELP:
-        help();
-        break;
+        case Message::Help:
+            help();
+            break;
 
-    case Message::VIEW:
-        view();
-        break;
+        case Message::View:
+            view();
+            break;
 
-    case Message::GET_PERSIST_INFO:
-        c = static_cast<Message>(sizeof(m_data));
-        return reinterpret_cast<uint16_t>(&m_data);
+        case Message::PersistInfo:
+            msg.size = sizeof(m_data);
+            msg.data_ptr = &m_data;
+            return;
 
-    default:
-        return uint16_t(false);
+        default:
+            msg.answer = Message::Unprocessed;
+            return;
     }
 
-    return uint16_t(true);
+    msg.answer = Message::Processed;
 }

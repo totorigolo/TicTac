@@ -59,14 +59,13 @@ class TSL1401 : public Object {
 public:
     TSL1401(uint8_t clk, uint8_t si, uint8_t aout);
 
-    // Object virtuals
-    bool parseInput(char c);
+    Message::Answer parseInput(char c);
 
     void help() const;
 
     void view();
 
-    uint16_t message(Message msg, uint8_t& c) override;
+    void message(Message& msg) override;
 
     const uint8_t* readData();
 
