@@ -31,18 +31,29 @@ DigitalOscillo::DigitalOscillo(uint8_t pin1, uint8_t pin2)
         : Object(ObjectID_t::OSCILLO),
           chan_1(pin1, BLUE), chan_2(pin2, RED), m_x(WIDTH)
 {
+}
+
+void DigitalOscillo::reset()
+{
     m_next_ech = timer();
+    m_x = 0;
+    tft.fillScreen(BLACK);
 }
 
 bool DigitalOscillo::parseInput(char c)
 {
     if (c != 'o') return false;
     c = Input::getChar();
+    reset();
+
     switch (c)
     {
     case 'p':
-        m_data.period_ech = Input::getInt();
-        return true;
+        {
+            int32_t p=Input::getInt();
+            if (p) m_data.period_ech = p;
+            return true;
+        }
 
     case 't':
         c = Input::getChar();
@@ -62,6 +73,15 @@ bool DigitalOscillo::parseInput(char c)
             return true;
         }
         break;
+
+    case 'l':   // Assign to left motor
+        chan_1.pin = 2; // TODO magics (should be taken from Ir
+        chan_2.pin = A1;
+        return true;
+    case 'r':
+        chan_1.pin = 3;
+        chan_2.pin = A2;
+        return true;
     default:
         Input::unget(c);
     }
@@ -72,10 +92,12 @@ void DigitalOscillo::help() const
 {
     Serial << F(" ot# : set trigger") << endl;
     Serial << F(" op# : set ech period") << endl;
+    Serial << F(" opl / opr : switch to motor") << endl;
 }
 
 DigitalOscillo::Channel::Channel(uint8_t channel_pin, uint16_t col)
-    : pin(channel_pin), color(col)
+    : pin(channel_pin), color(col),
+    last_freq(0), last_cyclic(0)
 {
     // pinMode(pin, INPUT);
 }
@@ -89,7 +111,7 @@ void DigitalOscillo::Channel::view() const
 {
     Serial << F("Chan.") << pin;
     if (pin < 10) Serial << ' ';
-    Serial << F(", p ") << period << F(", ") << frequency() << ("Hz ");
+    Serial << F(", p ") << period << F(", ")  << cyclic_period << F("% ") << frequency() << ("Hz ");
 }
 
 void DigitalOscillo::view()
@@ -102,7 +124,7 @@ void DigitalOscillo::view()
     << (char)( m_data.trigger  & ~Channel_2)<< endl;
 }
 
-bool DigitalOscillo::Channel::triggered(DigitalOscillo::TriggerType trigger, uint8_t x)
+bool DigitalOscillo::Channel::triggered(DigitalOscillo::TriggerType trigger, uint32_t current_time, uint8_t x)
 {
     bool ret = false;
     bool cyclic_trigger = false;
@@ -128,56 +150,103 @@ bool DigitalOscillo::Channel::triggered(DigitalOscillo::TriggerType trigger, uin
         break;
     }
 
-    tft.drawPixel((last_state ? LOW_1 : HIGH_1) + pin, x, BLACK);
-    tft.drawPixel((last_state ? HIGH_1 : LOW_1) + pin, x, color);
+    tft.drawPixel(x, (last_state ? LOW_1 : HIGH_1) + pin, BLACK);
+    tft.drawPixel(x, (last_state ? HIGH_1 : LOW_1) + pin, color);
 
     last_state = current_state;
+    if (cyclic_trigger)
+    {
+        cyclic_period = 100*(current_time-m_last_trigger_time) / period;
+    }
+    if (ret)
+    {
+        period = current_time - m_last_trigger_time;
+        m_last_trigger_time = current_time;
+    }
     return ret;
+}
+
+void DigitalOscillo::Channel::display()
+{
+    float f = frequency();
+    tft.setTextScale(2);
+
+    if (f != last_freq)
+    {
+        tft.setTextColor(BLACK);
+		tft.setCursor(WIDTH-12*8, pin*2);
+		tft.print(last_freq);
+		tft.print(F("Hz"));
+
+		tft.setTextColor(color);
+		tft.setCursor(WIDTH-12*8, pin*2);
+		tft.print(f);
+		tft.print(F("Hz"));
+		last_freq = f;
+    }
 }
 
 void DigitalOscillo::loop()
 {
+    static int16_t over=0;
     uint32_t current_time = timer();
     if (current_time < m_next_ech) return;
     m_next_ech += abs(m_data.period_ech);
+    if (current_time < m_next_ech) over++;
+
+    Channel* trigger_channel;
 
     TriggerType trigger = m_data.trigger & ~Channel_2;
     bool on_trigger;
 
     if (m_data.trigger & Channel_2)
     {
-        chan_1.triggered(trigger, m_x);
-        on_trigger = chan_2.triggered(trigger, m_x);
+        chan_1.triggered(trigger, current_time, m_x);
+        trigger_channel = &chan_2;
     }
     else
     {
-        on_trigger = chan_1.triggered(trigger, m_x);
-        chan_2.triggered(trigger, m_x);
+        trigger_channel = &chan_1;
+        chan_2.triggered(trigger, current_time, m_x);
     }
 
-    if (on_trigger)
+    if (trigger_channel->triggered(trigger, current_time, m_x))
     {
-        chan_1.period = current_time - m_last_trigger_time;
-        if (m_data.period_ech < 0 && (chan_1.period > 0))
+        if (m_data.period_ech < 0 && (trigger_channel->period > 0))
         {
             const int ONSCREEN_PERIODS = 3;
-            m_data.period_ech = -ONSCREEN_PERIODS * (int32_t) chan_1.period / (int32_t) WIDTH;
+            m_data.period_ech = -ONSCREEN_PERIODS * (int32_t) trigger_channel->period / (int32_t) WIDTH;
             if (m_data.period_ech == 0)
                 m_data.period_ech = -1;
         }
-        m_last_trigger_time = current_time;
-        if (m_x == 0)
+        if (m_x >= WIDTH)
         {
-            m_x = WIDTH;
+            m_x = 0;
             view();
         }
 
-        // Max 1s decl
-        if (m_data.period_ech > timer_resolution)
-            m_data.period_ech = timer_resolution;
+        if (m_data.period_ech > timer_resolution/128)
+            m_data.period_ech = timer_resolution/128;
+
     }
 
-    if (m_x > 0) m_x--;
+    if (m_x < WIDTH)
+        m_x++;
+    else
+    {
+        if (over)
+        {
+            Serial << "over " << over << '/' << m_data.period_ech << endl;
+            over = 0;
+            if (m_data.period_ech>0)
+                m_data.period_ech++;
+            else
+                m_data.period_ech--;
+        }
+        return;
+        chan_1.display();
+        chan_2.display();
+    }
 }
 
 uint16_t DigitalOscillo::message(Object::Message msg, uint8_t& c)

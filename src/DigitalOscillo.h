@@ -37,12 +37,20 @@ public:
         bool state() const { return digitalRead(pin) == HIGH; }
         float frequency() const;
         void view() const;
-        bool triggered(TriggerType, uint8_t x);
+        bool triggered(TriggerType, uint32_t period, uint8_t x);
+        void display();
 
         uint8_t pin;
         bool last_state;
         uint32_t period;
         uint16_t color;
+        uint8_t cyclic_period;
+
+    private:
+        // for display purpose
+        float last_freq;
+        uint8_t last_cyclic;
+        uint32_t m_last_trigger_time;
     };
 
     static const uint16_t holes_count = 20;    // Nbre of holes in motor disk sensor
@@ -60,6 +68,7 @@ public:
     void view();
 
     void loop();
+    void reset();
 
     uint16_t message(Message msg, uint8_t& c) override;
 
@@ -76,7 +85,6 @@ private:
     uint16_t m_x;
     uint32_t m_next_ech;
     uint32_t m_high_period;
-    uint32_t m_last_trigger_time;
 
     struct {
         int32_t period_ech = -50;     // <0 => Auto, >0 manual

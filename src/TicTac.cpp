@@ -70,14 +70,14 @@ Pid pid;
 // Left fork
 // 2 bleu haut
 // A1 rouge bas
-DigitalOscillo oscillo(2, A1);
+DigitalOscillo oscillo(3, A2);
 
 void setup()
 {
 	Serial.begin(57600);
 
-	leftMotor = new Motor('l', 6, 3, 7);
-	rightMotor = new Motor('r', 5, 2, 4);
+	leftMotor = new Motor('l', 7, 3, 6);
+	rightMotor = new Motor('r', 4, 2, 5);
 
 	Input::begin();
 
@@ -92,6 +92,7 @@ void setup()
 	digitalWrite(__RST,HIGH);
 	delay(10);
 	tft.begin();
+	tft.setRotation(3);
 
 	GY85.init();
 
