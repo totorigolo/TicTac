@@ -17,7 +17,7 @@
 #include "Streaming.h"
 #include "Setup.h"
 
-using namespace ObjectID;
+
 
 Motor::Motor(char name, uint8_t dir, uint8_t ir, uint8_t pinEnable)
         : Object(MOTOR),
@@ -101,6 +101,10 @@ void Motor::message(Message& msg)
 
         case Message::ParseInput:
             msg.answer = parseInput(msg.c);
+            break;
+
+        default:
+            msg.answer = Message::Unprocessed;
             break;
     }
 }

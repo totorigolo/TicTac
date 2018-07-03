@@ -16,8 +16,6 @@
 #include <TFT_ST7735.h>
 #include "DigitalOscillo.h"
 
-using namespace ObjectID;
-
 extern TFT_ST7735 tft;
 
 static const uint16_t WIDTH = 159;
@@ -51,11 +49,11 @@ Message::Answer DigitalOscillo::parseInput(char c)
     switch (c)
     {
     case 'p':
-        {
-            int32_t p=Input::getInt();
-            if (p) m_data.period_ech = p;
-            return Message::Processed;
-        }
+    {
+        int32_t p = Input::getInt();
+        if (p) m_data.period_ech = p;
+        return Message::Processed;
+    }
 
     case 't':
         c = Input::getChar();
@@ -79,12 +77,12 @@ Message::Answer DigitalOscillo::parseInput(char c)
     case 'l':   // Assign to left motor
         chan_1.pin = 2; // TODO magics (should be taken from Ir
         chan_2.pin = A1;
-            return Message::Processed;
+        return Message::Processed;
 
     case 'r':
         chan_1.pin = 3;
         chan_2.pin = A2;
-            return Message::Processed;
+        return Message::Processed;
 
     default:
         Input::unget(c);
@@ -100,8 +98,8 @@ void DigitalOscillo::help() const
 }
 
 DigitalOscillo::Channel::Channel(uint8_t channel_pin, uint16_t col)
-    : pin(channel_pin), color(col),
-    last_freq(0), last_cyclic(0)
+        : pin(channel_pin), color(col),
+          last_freq(0), last_cyclic(0)
 {
     // pinMode(pin, INPUT);
 }
@@ -115,7 +113,7 @@ void DigitalOscillo::Channel::view() const
 {
     Serial << F("Chan.") << pin;
     if (pin < 10) Serial << ' ';
-    Serial << F(", p ") << period << F(", ")  << cyclic_period << F("% ") << frequency() << ("Hz ");
+    Serial << F(", p ") << period << F(", ") << cyclic_period << F("% ") << frequency() << ("Hz ");
 }
 
 void DigitalOscillo::view()
@@ -125,7 +123,7 @@ void DigitalOscillo::view()
     chan_2.view();
     Serial << F(" Ech : ") << m_data.period_ech << ' ';
     Serial << F(" Trig(") << (m_data.trigger & Channel_2 ? 2 : 1) << F(") ")
-    << (char)( m_data.trigger  & ~Channel_2)<< endl;
+           << (char) (m_data.trigger & ~Channel_2) << endl;
 }
 
 bool DigitalOscillo::Channel::triggered(DigitalOscillo::TriggerType trigger, uint32_t current_time, uint8_t x)
@@ -136,25 +134,25 @@ bool DigitalOscillo::Channel::triggered(DigitalOscillo::TriggerType trigger, uin
 
     switch (trigger)
     {
-        case FallDown:
-            ret = last_state && !current_state;
-            cyclic_trigger = !last_state && current_state;
-            break;
+    case FallDown:
+        ret = last_state && !current_state;
+        cyclic_trigger = !last_state && current_state;
+        break;
 
-        case Raise:
-            ret = !last_state && current_state;
-            cyclic_trigger = last_state && !current_state;
-            break;
+    case Raise:
+        ret = !last_state && current_state;
+        cyclic_trigger = last_state && !current_state;
+        break;
 
-        case Low:
-            ret = !current_state;
-            cyclic_trigger = current_state;
-            break;
+    case Low:
+        ret = !current_state;
+        cyclic_trigger = current_state;
+        break;
 
-        case High:
-            ret = current_state;
-            cyclic_trigger = !current_state;
-            break;
+    case High:
+        ret = current_state;
+        cyclic_trigger = !current_state;
+        break;
     }
 
     tft.drawPixel(x, (last_state ? LOW_1 : HIGH_1) + pin, BLACK);
@@ -163,7 +161,7 @@ bool DigitalOscillo::Channel::triggered(DigitalOscillo::TriggerType trigger, uin
     last_state = current_state;
     if (cyclic_trigger)
     {
-        cyclic_period = 100*(current_time-m_last_trigger_time) / period;
+        cyclic_period = 100 * (current_time - m_last_trigger_time) / period;
     }
     if (ret)
     {
@@ -181,21 +179,21 @@ void DigitalOscillo::Channel::display()
     if (f != last_freq)
     {
         tft.setTextColor(BLACK);
-		tft.setCursor(WIDTH-12*8, pin*2);
-		tft.print(last_freq);
-		tft.print(F("Hz"));
+        tft.setCursor(WIDTH - 12 * 8, pin * 2);
+        tft.print(last_freq);
+        tft.print(F("Hz"));
 
-		tft.setTextColor(color);
-		tft.setCursor(WIDTH-12*8, pin*2);
-		tft.print(f);
-		tft.print(F("Hz"));
-		last_freq = f;
+        tft.setTextColor(color);
+        tft.setCursor(WIDTH - 12 * 8, pin * 2);
+        tft.print(f);
+        tft.print(F("Hz"));
+        last_freq = f;
     }
 }
 
 void DigitalOscillo::loop()
 {
-    static int16_t over=0;
+    static int16_t over = 0;
     uint32_t current_time = timer();
     if (current_time < m_next_ech) return;
     m_next_ech += abs(m_data.period_ech);
@@ -231,8 +229,8 @@ void DigitalOscillo::loop()
             view();
         }
 
-        if (m_data.period_ech > timer_resolution/128)
-            m_data.period_ech = timer_resolution/128;
+        if (m_data.period_ech > timer_resolution / 128)
+            m_data.period_ech = timer_resolution / 128;
 
     }
 
@@ -244,7 +242,7 @@ void DigitalOscillo::loop()
         {
             Serial << "over " << over << '/' << m_data.period_ech << endl;
             over = 0;
-            if (m_data.period_ech>0)
+            if (m_data.period_ech > 0)
                 m_data.period_ech++;
             else
                 m_data.period_ech--;
@@ -261,28 +259,31 @@ void DigitalOscillo::message(Message& msg)
     {
     case Message::ParseInput:
         msg.answer = parseInput(msg.c);
-        return;
+        break;
 
     case Message::View:
         view();
+        msg.answer = Message::Processed;
         break;
 
     case Message::Loop:
         loop();
+        msg.answer = Message::Processed;
         break;
 
     case Message::Help:
         help();
+        msg.answer = Message::Processed;
         break;
 
     case Message::PersistInfo:
-        msg.size = (uint8_t)(sizeof(m_data));
+        msg.size = (uint8_t) (sizeof(m_data));
         msg.data_ptr = &m_data;
-        return;
+        msg.answer = Message::Processed;
+        break;
 
     default:
         msg.answer = Message::Unprocessed;
-        return;
+        break;
     }
-    msg.answer = Message::Processed;
 }

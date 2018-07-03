@@ -17,4 +17,4 @@
 
 char* Input::head;
 char* Input::queue;
-char* Input::buff = 0;
+char* Input::buff = nullptr;

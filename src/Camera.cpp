@@ -1,7 +1,7 @@
 #include "Camera.h"
 #include <TFT_ST7735.h>
 
-using namespace ObjectID;
+
 
 extern TFT_ST7735 tft;
 
@@ -30,7 +30,7 @@ Message::Answer TSL1401::parseInput(char c)
 
 void TSL1401::help() const
 {
-    Serial << " s# : Change sample speed" << endl;
+    Serial << F(" s# : Change sample speed") << endl;
 }
 
 #if 0
@@ -83,21 +83,22 @@ void TSL1401::message(Message& msg)
     {
     case Message::ParseInput:
         msg.answer = parseInput(msg.c);
-        return;
+        break;
 
     case Message::View:
         view();
+        msg.answer = Message::Processed;
         break;
 
     case Message::Help:
         help();
+        msg.answer = Message::Processed;
         break;
 
     default:
-        return; // Unprocessed
+        msg.answer = Message::Unprocessed;
         break;
     }
-    msg.answer = Message::Processed;
 }
 
 const uint8_t* TSL1401::readData()

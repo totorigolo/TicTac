@@ -44,11 +44,11 @@ public:
 
     public:
         Message() = delete;
-        Message(Type t) : type(t), answer(Unprocessed)  {}
+        explicit Message(Type t) : type(t), answer(Unprocessed)  {}
 
         inline bool isProcessed() const
         {
-            return data_ptr != 0;
+            return answer & Processed;
         }
 
         inline bool mustBePropagated() const
@@ -56,18 +56,14 @@ public:
             return answer & Propagate;
         }
 
+        void* data_ptr = nullptr;
         Type type;
-
-        union
-        {
-            void* data_ptr;
-            uint8_t answer;
-        };
+        Answer answer;
 
         union
         {
             char c;
-            uint8_t size;
+            uint8_t size = 0;
         };
 };
 

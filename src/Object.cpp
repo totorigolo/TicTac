@@ -19,7 +19,7 @@
 #include "Setup.h"
 #include <Streaming.h>
 
-using namespace ObjectID;
+
 
 uint16_t Object::restorePtr = 0;
 uint8_t Object::m_count = 0;
@@ -91,27 +91,26 @@ void Object::loopAll()
 
 bool Object::parse(char c)
 {
-    bool ret=false;
-    Message parse(Message::ParseInput);
+    bool ret = false;
 
-    parse.c = c;
+    Message parseMsg(Message::ParseInput);
+    parseMsg.c = c;
+
     for (uint8_t i = 0; i < m_count; i++)
     {
         Object* object = m_objects[i];
-        object->message(parse);
-        if (parse.isProcessed())
+
+        object->message(parseMsg);
+        if (parseMsg.isProcessed())
         {
             ret = true;
-            Message view(Message::View);
+            Message viewMsg(Message::View);
+            object->message(viewMsg);
 
-            Message persist_info(Message::PersistInfo);
-            object->message(persist_info);
-            if (persist_info.isProcessed())
-            {
-                persistAll();
-            }
-            if (!parse.mustBePropagated())
-                break;
+            Message persistInfoMsg(Message::PersistInfo);
+            object->message(persistInfoMsg);
+            if (persistInfoMsg.isProcessed()) persistAll();
+            if (!parseMsg.mustBePropagated()) break;
         }
     }
     return ret;
@@ -119,20 +118,17 @@ bool Object::parse(char c)
 
 void Object::persistAll()
 {
-    Message persist(Message::PersistInfo);
-
     uint16_t ptr = 0;
     for (uint8_t i = 0; i < m_count; i++)
     {
         Object* object = m_objects[i];
 
-        persist.data_ptr = 0;
-        object->message(persist);
-
-        if (persist.data_ptr == 0)
+        Message persistMsg(Message::PersistInfo);
+        object->message(persistMsg);
+        if (!persistMsg.isProcessed())
             continue;
 
-        uint8_t* data_ptr = (uint8_t*)persist.data_ptr;
+        uint8_t* data_ptr = (uint8_t*) persistMsg.data_ptr;
 
         Serial << F("Persist ");
         Setup::dumpName(object->m_flag);
@@ -141,7 +137,7 @@ void Object::persistAll()
         //static_assert(sizeof(size) == 1);
         //static_assert(sizeof(object->m_flag) == 1);
 
-        auto& size = persist.size;
+        auto& size = persistMsg.size;
         EEPROM.update(ptr++, object->m_flag);
         EEPROM.update(ptr++, size);
 
@@ -163,17 +159,16 @@ void Object::restoreAll()
 void Object::restore()
 {
     Message restore(Message::PersistInfo);
-
     message(restore);
-    uint8_t* data_ptr = (uint8_t*)restore.data_ptr;
-    if (data_ptr == 0)
-        return;
+    if (!restore.isProcessed()) return;
+
+    uint8_t* data_ptr = (uint8_t*) restore.data_ptr;
 
     Serial << F("Restoring ");
     Setup::dumpName(getFlag());
 
     auto& size = restore.size;
-    uint8_t size_check = 0;
+    uint8_t size_check;
     Id id_check;
     EEPROM.get(restorePtr, id_check);
     EEPROM.get(restorePtr + 1, size_check);
@@ -191,6 +186,6 @@ void Object::restore()
     }
     else
     {
-        Serial << F(" Bad data !") << endl;
+        Serial << F(" Bad data: ") << size << F(" ") << m_flag << endl;
     }
 }

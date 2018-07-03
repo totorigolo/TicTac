@@ -1,13 +1,11 @@
 #include "Setup.h"
 
-using namespace ObjectID;
-
 Setup settings;
 
 Setup::Setup()
         : Object(Id::SETUP) { }
 
-void Setup::dumpName(const Object::Id &flag)
+void Setup::dumpName(const Object::Id& flag)
 {
     switch (flag)
     {
@@ -35,61 +33,61 @@ Message::Answer Setup::parseInput(char c)
 {
     switch (c)
     {
-        case 'x':
-            pid_input_index = Input::getInt();
-            view();
-            break;
+    case 'x':
+        pid_input_index = Input::getInt();
+        view();
+        break;
 
-        case 't':
-            pid_target_value = Input::getInt();
-            view();
-            break;
+    case 't':
+        pid_target_value = Input::getInt();
+        view();
+        break;
 
-        case 'I':
-            // TODO, use an interrupt for PID
-            interval = Input::getInt();
-            tm = millis() + interval;
-            Serial << F("Interval: ") << interval << endl;
-            break;
+    case 'I':
+        // TODO, use an interrupt for PID
+        interval = Input::getInt();
+        tm = millis() + interval;
+        Serial << F("Interval: ") << interval << endl;
+        break;
 
-        case 'C':
-            toggle(CAMERA);
-            break;
+    case 'C':
+        toggle(CAMERA);
+        break;
 
-        case 'F':
-            toggle(FPS);
-            break;
+    case 'F':
+        toggle(FPS);
+        break;
 
-        case 'M':
-            toggle(MOTOR);
-            break;
+    case 'M':
+        toggle(MOTOR);
+        break;
 
-        case 'P':
-            toggle(PID);
-            break;
+    case 'P':
+        toggle(PID);
+        break;
 
-        case 'O':
-            toggle(OSCILLO);
-            break;
+    case 'O':
+        toggle(OSCILLO);
+        break;
 
-        case '!':
-            Serial << F("Regulation : ") << (toggle(REGULATION) ? "ON" : "OFF") << endl;
-            break;
+    case '!':
+        Serial << F("Regulation : ") << (toggle(REGULATION) ? "ON" : "OFF") << endl;
+        break;
 
-        case '0':
-            flags = NONE;
-            break;
+    case '0':
+        flags = NONE;
+        break;
 
-        case '*':
-            once = ALL;
-            break;
+    case '*':
+        once = ALL;
+        break;
 
-        case 'V':
-            view();
-            break;
+    case 'V':
+        view();
+        break;
 
-        default:
-            return Message::Unprocessed;
+    default:
+        return Message::Unprocessed;
     }
     return Message::Processed;
 }
@@ -138,7 +136,7 @@ bool Setup::isFlag(const Id& flag)
     auto result = bool((flags | once) & flag);
     if (result)
     {
-		once &= ~flag;
+        once &= ~flag;
     }
     return result;
 }
@@ -159,23 +157,23 @@ void Setup::message(Message& msg)
 {
     switch (msg.type)
     {
-        case Message::View:
-            Serial << F("Pid input : ") << pid_input_index << endl;
-            Serial << F("Pid target: ") << pid_target_value << endl;
-            break;
+    case Message::View:
+        Serial << F("Pid input : ") << pid_input_index << endl;
+        Serial << F("Pid target: ") << pid_target_value << endl;
+        msg.answer = Message::Processed;
+        break;
 
-        case Message::ParseInput:
-            msg.answer = parseInput(msg.c);
-            return;
+    case Message::ParseInput:
+        msg.answer = parseInput(msg.c);
+        break;
 
-        case Message::Help:
-            help();
-            break;
+    case Message::Help:
+        help();
+        msg.answer = Message::Processed;
+        break;
 
-        default:
-            msg.answer = Message::Unprocessed;
-            return;
+    default:
+        msg.answer = Message::Unprocessed;
+        break;
     }
-    msg.answer = Message::Processed;
-    return;
 }

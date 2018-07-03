@@ -15,9 +15,8 @@
 
 #include "Pid.h"
 
-using namespace ObjectID;
-
-Pid::Pid() : Object(PID) { }
+Pid::Pid()
+        : Object(PID) { }
 
 PidType Pid::update(PidType error)
 {
@@ -35,19 +34,19 @@ void Pid::resetIntegral()
 void Pid::setKp(PidType kp)
 {
     m_data.m_kp = kp;
-    view();
+//    view();
 }
 
 void Pid::setKi(PidType ki)
 {
     m_data.m_ki = ki;
-    view();
+//    view();
 }
 
 void Pid::setKd(PidType kd)
 {
     m_data.m_kd = kd;
-    view();
+//    view();
 }
 
 Message::Answer Pid::parseInput(char c)
@@ -66,7 +65,7 @@ Message::Answer Pid::parseInput(char c)
 
 void Pid::view() const
 {
-	Setup::dumpName(getFlag());
+    Setup::dumpName(getFlag());
     Serial << '(' << m_data.m_kp << F(", ") << m_data.m_ki << F(", ") << m_data.m_kd << F(") I=") << m_integral << endl;
 }
 
@@ -81,27 +80,28 @@ void Pid::message(Message& msg)
 {
     switch (msg.type)
     {
-        case Message::ParseInput:
-            msg.answer = parseInput(msg.c);
-            return;
+    case Message::ParseInput:
+        msg.answer = parseInput(msg.c);
+        break;
 
-        case Message::Help:
-            help();
-            break;
+    case Message::Help:
+        help();
+        msg.answer = Message::Processed;
+        break;
 
-        case Message::View:
-            view();
-            break;
+    case Message::View:
+        view();
+        msg.answer = Message::Processed;
+        break;
 
-        case Message::PersistInfo:
-            msg.size = sizeof(m_data);
-            msg.data_ptr = &m_data;
-            return;
+    case Message::PersistInfo:
+        msg.size = sizeof(m_data);
+        msg.data_ptr = &m_data;
+        msg.answer = Message::Processed;
+        break;
 
-        default:
-            msg.answer = Message::Unprocessed;
-            return;
+    default:
+        msg.answer = Message::Unprocessed;
+        break;
     }
-
-    msg.answer = Message::Processed;
 }
