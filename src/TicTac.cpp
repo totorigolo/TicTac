@@ -72,6 +72,18 @@ Pid pid;
 // A1 rouge bas
 DigitalOscillo oscillo(3, A2);
 
+int cpt = 0;
+const int p1 = 2;
+const int p2 = A1;
+
+// Interrupt Service Routine attached to INT0 vector
+//ISR(EXT_INT0_vect)
+void foo()
+{
+    if (digitalRead(p2) == HIGH) cpt++;
+    else cpt--;
+}
+
 void setup()
 {
 	Serial.begin(57600);
@@ -101,6 +113,11 @@ void setup()
 	Object::restoreAll();
   	Object::listAll();
 	Serial << F("[TicTac] ready!") << endl << F("> ");
+
+    attachInterrupt(digitalPinToInterrupt(p1), foo, FALLING);
+    Serial.println("Interrupt engaged.");
+
+//    leftMotor->setPower(200);
 }
 
 void setMotorsPower(int power)
@@ -109,10 +126,24 @@ void setMotorsPower(int power)
 	rightMotor->setPower(power);
 }
 
+int prevCpt = 123;
 void loop()
 {
     Console::loop();
     Object::loopAll();
+
+//    if (cpt != prevCpt) {
+//        prevCpt = cpt;
+//
+//        Serial << micros() << " " << cpt << endl;
+//
+//        if (abs(cpt) == 100)
+//        {
+//            leftMotor->setPower(-leftMotor->getPower());
+//            Serial.println("Changed my mind.");
+//            Serial << leftMotor->getPower() << endl;
+//        }
+//    }
 }
 
 void true_loop()
@@ -181,6 +212,3 @@ void true_loop()
 
 	}
 }
-
-
-
