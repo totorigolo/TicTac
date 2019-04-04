@@ -36,14 +36,13 @@ public:
 
     void setKd(PidType kd);
 
-    // Object virtuals
-    bool parseInput(char c);
+    Message::Answer parseInput(char c);
 
     void view() const;
 
     void help();
 
-    uint16_t message(Message msg, uint8_t& c);
+    void message(Message& msg);
 
 private:
     struct {

@@ -1,29 +1,27 @@
 #include "Setup.h"
 
-using namespace ObjectID;
-
 Setup settings;
 
 Setup::Setup()
-        : Object(ObjectID_t::SETUP) { }
+        : Object(Id::SETUP) { }
 
-void Setup::dumpName(ObjectID_t flag)
+void Setup::dumpName(const Object::Id& flag)
 {
     switch (flag)
     {
-    case ObjectID_t::PID:
+    case PID:
         Serial << F("PID");
         break;
-    case ObjectID_t::CAMERA:
+    case CAMERA:
         Serial << F("CAMERA");
         break;
-    case ObjectID_t::MOTOR:
+    case MOTOR:
         Serial << F("MOTOR");
         break;
-    case ObjectID_t::SETUP:
+    case SETUP:
         Serial << F("SETUP");
         break;
-    case ObjectID_t::OSCILLO:
+    case OSCILLO:
         Serial << F("OSCILLO");
         break;
     default:
@@ -31,62 +29,57 @@ void Setup::dumpName(ObjectID_t flag)
     }
 }
 
-bool Setup::parseInput(char c)
+Message::Answer Setup::parseInput(char c)
 {
     switch (c)
     {
     case 'x':
-        {
-            pid_input_index = Input::getInt();
-            view();
-        }
+        pid_input_index = Input::getInt();
+        view();
         break;
+
     case 't':
-        {
-            pid_target_value = Input::getInt();
-            view();
-        }
+        pid_target_value = Input::getInt();
+        view();
         break;
+
     case 'I':
-        {
-            interval = Input::getInt();
-            fps = interval;
-            extern float fps;
-            tm = millis() + interval;
-            Serial << F("Interval: ") << interval << endl;
-        }
+        // TODO, use an interrupt for PID
+        interval = Input::getInt();
+        tm = millis() + interval;
+        Serial << F("Interval: ") << interval << endl;
         break;
 
     case 'C':
-        toggle(ObjectID_t::CAMERA);
+        toggle(CAMERA);
         break;
 
     case 'F':
-        toggle(ObjectID_t::FPS);
+        toggle(FPS);
         break;
 
     case 'M':
-        toggle(ObjectID_t::MOTOR);
+        toggle(MOTOR);
         break;
 
     case 'P':
-        toggle(ObjectID_t::PID);
+        toggle(PID);
         break;
 
     case 'O':
-        toggle(ObjectID_t::OSCILLO);
+        toggle(OSCILLO);
         break;
 
     case '!':
-        Serial << F("Regulation : ") << (toggle(ObjectID_t::REGULATION) ? "ON" : "OFF") << endl;
+        Serial << F("Regulation : ") << (toggle(REGULATION) ? "ON" : "OFF") << endl;
         break;
 
     case '0':
-        flags = ObjectID_t::NONE;
+        flags = NONE;
         break;
 
     case '*':
-        once = ObjectID_t::ALL;
+        once = ALL;
         break;
 
     case 'V':
@@ -94,9 +87,9 @@ bool Setup::parseInput(char c)
         break;
 
     default:
-        return false;
+        return Message::Unprocessed;
     }
-    return true;
+    return Message::Processed;
 }
 
 void Setup::view()
@@ -121,7 +114,7 @@ void Setup::view()
     Serial << endl;
 }
 
-bool Setup::toggle(ObjectID_t bit)
+bool Setup::toggle(const Id& bit)
 {
     if (flags & bit)
         flags &= ~bit;
@@ -130,20 +123,20 @@ bool Setup::toggle(ObjectID_t bit)
     return isFlag(bit);
 }
 
-bool Setup::viewPid() { return isFlag(ObjectID_t::PID); }
+bool Setup::viewPid() { return isFlag(PID); }
 
-bool Setup::viewFps() { return isFlag(ObjectID_t::FPS); }
+bool Setup::viewFps() { return isFlag(FPS); }
 
-bool Setup::pidControlled() { return isFlag(ObjectID_t::REGULATION); }
+bool Setup::pidControlled() { return isFlag(REGULATION); }
 
-bool Setup::viewMotors() { return isFlag(ObjectID_t::MOTOR); }
+bool Setup::viewMotors() { return isFlag(MOTOR); }
 
-bool Setup::isFlag(ObjectID_t flag)
+bool Setup::isFlag(const Id& flag)
 {
     auto result = bool((flags | once) & flag);
     if (result)
     {
-		once &= ~flag;
+        once &= ~flag;
     }
     return result;
 }
@@ -160,24 +153,27 @@ void Setup::help()
     Serial << F(" I#: set update interval") << endl;
 }
 
-uint16_t Setup::message(Object::Message msg, uint8_t& c)
+void Setup::message(Message& msg)
 {
-    switch (msg)
+    switch (msg.type)
     {
-    case Message::VIEW:
+    case Message::View:
         Serial << F("Pid input : ") << pid_input_index << endl;
         Serial << F("Pid target: ") << pid_target_value << endl;
+        msg.answer = Message::Processed;
         break;
 
-    case Message::PARSE_INPUT:
-        return parseInput(c);
+    case Message::ParseInput:
+        msg.answer = parseInput(msg.c);
+        break;
 
-    case Message::HELP:
+    case Message::Help:
         help();
+        msg.answer = Message::Processed;
         break;
 
     default:
-        return false;
+        msg.answer = Message::Unprocessed;
+        break;
     }
-    return true;
 }

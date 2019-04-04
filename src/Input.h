@@ -18,124 +18,120 @@
 #include <Arduino.h>
 
 const int MaxInputSize = 16;
-class Input
-{
-	public:
+class Input {
+public:
 
-		static void begin()
-		{
-			if (buff)
-				delete[] buff;
-			buff = new char[MaxInputSize];
-			clear();
-		}
+    static void begin()
+    {
+        delete[] buff;
+        buff = new char[MaxInputSize];
+        clear();
+    }
 
-		static void clear()
-		{
-			head=buff;
-			queue=buff;
-		}
+    static void clear()
+    {
+        head = buff;
+        queue = buff;
+    }
 
-		static void addChar(char c)
-		{
-			if (full())
-				return;
-			inc(head);
-			*head = c;
-		}
+    static void addChar(char c)
+    {
+        if (full()) return;
+        inc(head);
+        *head = c;
+    }
 
-		static bool full()
-		{
-			char * tst=head;
-			inc(tst);
-			return tst == queue;
-		}
+    static bool full()
+    {
+        char* tst = head;
+        inc(tst);
+        return tst == queue;
+    }
 
-		static bool delLast()
-		{
-			if (empty()) return false;
-			dec(head);
-			return true;
-		}
+    static bool delLast()
+    {
+        if (empty()) return false;
+        dec(head);
+        return true;
+    }
 
-		static char getChar()
-		{
-			if (head == queue)
-				return 0;
-			inc(queue);
-			return *queue;  
-		}
+    static char getChar()
+    {
+        if (empty()) return 0;
+        inc(queue);
+        return *queue;
+    }
 
-		static void unget(char c)
-		{
-			*queue=c;
-			dec(queue);
-		}
+    static void unget(char c)
+    {
+        *queue = c;
+        dec(queue);
+    }
 
-		static bool empty()
-		{
-			return (head == queue);
-		}
+    static bool empty()
+    {
+        return (head == queue);
+    }
 
-		static int getInt(char c=0) { return static_cast<int>(getFloat(c)); }
+    static int getInt(char c = 0) { return static_cast<int>(getFloat(c)); }
 
-		static float getFloat(char c=0)
-		{
-			float result = 0.0;
-			bool negative = false;
-			bool decimals = false;
-			float decimal = 0.1;
-			if (c == 0) c = getChar();
-			if (c == '-')
-			{
-				negative=true;
-				c = getChar();
-			}
+    static float getFloat(char c = 0)
+    {
+        float result = 0.0;
+        bool negative = false;
+        bool decimals = false;
+        float decimal = 0.1;
+        if (c == 0) c = getChar();
+        if (c == '-')
+        {
+            negative = true;
+            c = getChar();
+        }
 
-			while (c == '.' || c == '+' || isDigit(c))
-			{
-				if (c == '.')
-				{
-					if (decimals)
-						break;
-					decimals = true;
-				}
-				else if (decimals)
-				{
-					result += decimal * static_cast<float>(c-'0');
-					decimal *= 0.1;
-				}
-				else
-				{
-					result *=10.0;
-					result += c-'0';
-				}
-				c = getChar();
-			}
-			if (c) unget(c);
+        while (c == '.' || c == '+' || isDigit(c))
+        {
+            if (c == '.')
+            {
+                if (decimals)
+                    break;
+                decimals = true;
+            }
+            else if (decimals)
+            {
+                result += decimal * static_cast<float>(c - '0');
+                decimal *= 0.1;
+            }
+            else
+            {
+                result *= 10.0;
+                result += c - '0';
+            }
+            c = getChar();
+        }
+        if (c) unget(c);
 
-			return result * (negative ? -1.0 : 1.0);
-		}
+        return result * (negative ? -1.0 : 1.0);
+    }
 
-	private:
-		Input() {}
+private:
+    Input() = default;
 
-		static void inc(char* &ptr)
-		{
-			ptr++;
-			if (ptr == buff+MaxInputSize)
-				ptr = buff;
-		}
+    static void inc(char*& ptr)
+    {
+        ptr++;
+        if (ptr == buff + MaxInputSize)
+            ptr = buff;
+    }
 
-		static void dec(char* &ptr)
-		{
-			ptr--;
-			if (ptr<buff)
-				ptr = buff+MaxInputSize-1;
-		}
+    static void dec(char*& ptr)
+    {
+        ptr--;
+        if (ptr < buff)
+            ptr = buff + MaxInputSize - 1;
+    }
 
-		static char* buff;
-		static char* head;
-		static char* queue;     
+    static char* buff;
+    static char* head;
+    static char* queue;
 };
 

@@ -1,12 +1,12 @@
 #include "Camera.h"
 #include <TFT_ST7735.h>
 
-using namespace ObjectID;
+
 
 extern TFT_ST7735 tft;
 
 TSL1401::TSL1401(uint8_t clk, uint8_t si, uint8_t aout)
-        : Object(ObjectID_t::CAMERA),
+        : Object(CAMERA),
           m_si(si), m_clk(clk), m_aout(aout)
 {
     pinMode(m_si, OUTPUT);
@@ -18,19 +18,19 @@ TSL1401::TSL1401(uint8_t clk, uint8_t si, uint8_t aout)
     m_time = 170;
 }
 
-bool TSL1401::parseInput(char c)
+Message::Answer TSL1401::parseInput(char c)
 {
     if (c == 's')
     {
         m_time = uint8_t(Input::getInt());
-        return true;
+        return Message::Processed;
     }
-    return false;
+    return Message::Unprocessed;
 }
 
 void TSL1401::help() const
 {
-    Serial << " s# : Change sample speed" << endl;
+    Serial << F(" s# : Change sample speed") << endl;
 }
 
 #if 0
@@ -77,25 +77,28 @@ void TSL1401::view()
 
 #endif
 
-uint16_t TSL1401::message(Object::Message msg, uint8_t& c)
+void TSL1401::message(Message& msg)
 {
-    switch (msg)
+    switch (msg.type)
     {
-    case Message::PARSE_INPUT:
-        return uint16_t(parseInput(c));
-
-    case Message::VIEW:
-        view();
+    case Message::ParseInput:
+        msg.answer = parseInput(msg.c);
         break;
 
-    case Message::HELP:
+    case Message::View:
+        view();
+        msg.answer = Message::Processed;
+        break;
+
+    case Message::Help:
         help();
+        msg.answer = Message::Processed;
         break;
 
     default:
-        return uint16_t(false);
+        msg.answer = Message::Unprocessed;
+        break;
     }
-    return uint16_t(true);
 }
 
 const uint8_t* TSL1401::readData()

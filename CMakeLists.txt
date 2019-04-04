@@ -42,7 +42,6 @@ set(TicTac_src
         )
 
 set(TicTac_hdrs
-        src/ObjectID.h
         src/DigitalOscillo.h
         src/Camera.h
         src/Object.h

@@ -15,20 +15,16 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include "Object.h"
 
-namespace ObjectID {
+class Fps : public Object
+{
+    public:
+        Fps();
 
-enum ObjectID_t : uint8_t {
-    NONE = 0U,
-    PID = 1U << 0U,
-    FPS = 1U << 1U,
-    REGULATION = 1U << 2U,
-    MOTOR = 1U << 3U,
-    CAMERA = 1U << 4U,
-    SETUP = 1U << 5U,
-    OSCILLO = 1U << 6U,
-    ALL = 0xFF,
+        virtual void message(Message& msg) override;
+
+     private:
+        float fps;
 };
 
-} // namespace ObjectID

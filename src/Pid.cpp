@@ -15,10 +15,8 @@
 
 #include "Pid.h"
 
-using namespace ObjectID;
-
 Pid::Pid()
-        : Object(ObjectID_t::PID) { }
+        : Object(PID) { }
 
 PidType Pid::update(PidType error)
 {
@@ -36,22 +34,22 @@ void Pid::resetIntegral()
 void Pid::setKp(PidType kp)
 {
     m_data.m_kp = kp;
-    view();
+//    view();
 }
 
 void Pid::setKi(PidType ki)
 {
     m_data.m_ki = ki;
-    view();
+//    view();
 }
 
 void Pid::setKd(PidType kd)
 {
     m_data.m_kd = kd;
-    view();
+//    view();
 }
 
-bool Pid::parseInput(char c)
+Message::Answer Pid::parseInput(char c)
 {
     if (c == 'p')
         setKp(Input::getFloat());
@@ -60,14 +58,14 @@ bool Pid::parseInput(char c)
     else if (c == 'd')
         setKd(Input::getFloat());
     else
-        return false;
+        return Message::Unprocessed;
 
-    return true;
+    return Message::Processed;
 }
 
 void Pid::view() const
 {
-	Setup::dumpName(getFlag());
+    Setup::dumpName(getFlag());
     Serial << '(' << m_data.m_kp << F(", ") << m_data.m_ki << F(", ") << m_data.m_kd << F(") I=") << m_integral << endl;
 }
 
@@ -78,28 +76,32 @@ void Pid::help()
     Serial << F(" t# : target value") << endl;
 }
 
-uint16_t Pid::message(Object::Message msg, uint8_t& c)
+void Pid::message(Message& msg)
 {
-    switch (msg)
+    switch (msg.type)
     {
-    case Message::PARSE_INPUT:
-        return uint16_t(parseInput(c));
+    case Message::ParseInput:
+        msg.answer = parseInput(msg.c);
+        break;
 
-    case Message::HELP:
+    case Message::Help:
         help();
+        msg.answer = Message::Processed;
         break;
 
-    case Message::VIEW:
+    case Message::View:
         view();
+        msg.answer = Message::Processed;
         break;
 
-    case Message::GET_PERSIST_INFO:
-        c = static_cast<Message>(sizeof(m_data));
-        return reinterpret_cast<uint16_t>(&m_data);
+    case Message::PersistInfo:
+        msg.size = sizeof(m_data);
+        msg.data_ptr = &m_data;
+        msg.answer = Message::Processed;
+        break;
 
     default:
-        return uint16_t(false);
+        msg.answer = Message::Unprocessed;
+        break;
     }
-
-    return uint16_t(true);
 }

@@ -60,8 +60,7 @@ public:
 public:
     DigitalOscillo(uint8_t pin1, uint8_t pin2);
 
-    // Object virtuals
-    bool parseInput(char c);
+    Message::Answer parseInput(char c);
 
     void help() const;
 
@@ -70,7 +69,7 @@ public:
     void loop();
     void reset();
 
-    uint16_t message(Message msg, uint8_t& c) override;
+    void message(Message& msg) override;
 
     static uint32_t timer() { return micros(); }
 

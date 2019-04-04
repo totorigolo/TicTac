@@ -20,20 +20,20 @@
 
 #include "Object.h"
 #include "Input.h"
-#include "ObjectID.h"
+
 
 class Setup : public Object {
 
 public:
     Setup();
 
-    static void dumpName(ObjectID::ObjectID_t flag);
+    static void dumpName(const Object::Id& flag);
 
-    bool parseInput(char c);
+    Message::Answer parseInput(char c);
 
     void view();
 
-    bool toggle(ObjectID::ObjectID_t bit);
+    bool toggle(const Object::Id &bit);
 
     bool viewPid();
 
@@ -43,20 +43,19 @@ public:
 
     bool viewMotors();
 
-    bool isFlag(ObjectID::ObjectID_t flag);
+    bool isFlag(const Object::Id& flag);
 
     void help();
 
-    uint16_t message(Message msg, uint8_t& c) override;
+    void message(Message& msg) override;
 
 public:
     unsigned long interval;
-    float fps;
     unsigned long tm; // FIXME: Unused
 
 private:
-    ObjectID::ObjectID_t flags = ObjectID::NONE;
-	ObjectID::ObjectID_t once = ObjectID::NONE;
+    Id flags = NONE;
+	Id once = NONE;
     uint8_t pid_input_index = 0U;  // index of GY85 array use as 'vertical' input
     uint16_t pid_target_value = 0U;
 };

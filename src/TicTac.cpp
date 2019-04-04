@@ -72,6 +72,18 @@ Pid pid;
 // A1 rouge bas
 DigitalOscillo oscillo(3, A2);
 
+int cpt = 0;
+const int p1 = 2;
+const int p2 = A1;
+
+// Interrupt Service Routine attached to INT0 vector
+//ISR(EXT_INT0_vect)
+void foo()
+{
+    if (digitalRead(p2) == HIGH) cpt++;
+    else cpt--;
+}
+
 void setup()
 {
 	Serial.begin(57600);
@@ -101,6 +113,11 @@ void setup()
 	Object::restoreAll();
   	Object::listAll();
 	Serial << F("[TicTac] ready!") << endl << F("> ");
+
+    attachInterrupt(digitalPinToInterrupt(p1), foo, FALLING);
+    Serial.println("Interrupt engaged.");
+
+//    leftMotor->setPower(200);
 }
 
 void setMotorsPower(int power)
@@ -109,10 +126,24 @@ void setMotorsPower(int power)
 	rightMotor->setPower(power);
 }
 
+int prevCpt = 123;
 void loop()
 {
     Console::loop();
     Object::loopAll();
+
+//    if (cpt != prevCpt) {
+//        prevCpt = cpt;
+//
+//        Serial << micros() << " " << cpt << endl;
+//
+//        if (abs(cpt) == 100)
+//        {
+//            leftMotor->setPower(-leftMotor->getPower());
+//            Serial.println("Changed my mind.");
+//            Serial << leftMotor->getPower() << endl;
+//        }
+//    }
 }
 
 void true_loop()
@@ -126,7 +157,6 @@ void true_loop()
 
 		static const float avg_rate = 0.99;
 		fps = avg_rate*fps + (1-avg_rate)*(float)((long)tm-(long)millis());
-		int16_t idx=0;
 
 		// ax ay az
 		gy[0] = GY85.accelerometer_x( GY85.readFromAccelerometer() );
@@ -141,7 +171,7 @@ void true_loop()
 		gy[6] = GY85.gyro_x( GY85.readGyro() );
 		gy[7] = GY85.gyro_y( GY85.readGyro() );
 		gy[8] = GY85.gyro_z( GY85.readGyro() );
-		float gt = GY85.temp  ( GY85.readGyro() );
+		float gtemp = GY85.temp  ( GY85.readGyro() );
 
 		/*Serial << "ACC (";
 		  for(int i=0; i<9; i++)
@@ -172,24 +202,13 @@ void true_loop()
 		float pid_result = pid.update(pid_input);
 		if (settings.pidControlled()) setMotorsPower(pid_result);
 
-		/*
-		if (settings.viewPid())
-		{
-			Serial << F("PID(") << pid_input << ") = " << pid_result << " => ";
-			pid.view();
-		}
-		*/
-
 //		Object::viewAll();
 		Object::loopAll();
 
 		if (settings.viewFps())
 		{
-			Serial << F("Avg fps : ") << settings.fps << endl;
+
 		}
 
 	}
 }
-
-
-

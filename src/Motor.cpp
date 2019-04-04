@@ -17,10 +17,10 @@
 #include "Streaming.h"
 #include "Setup.h"
 
-using namespace ObjectID;
+
 
 Motor::Motor(char name, uint8_t dir, uint8_t ir, uint8_t pinEnable)
-        : Object(ObjectID_t::MOTOR),
+        : Object(MOTOR),
           c_name(name), m_dir(dir), m_ir(ir), m_pinEn(pinEnable), current_power(9999)
 {
     Init();
@@ -61,9 +61,9 @@ void Motor::help() const
     Serial << F(" nnn   : change speed") << endl;
 }
 
-bool Motor::parseInput(char c)
+Message::Answer Motor::parseInput(char c)
 {
-    if (c != c_name) return false;
+    if (c != c_name) return Message::Unprocessed;
 
     while ((c = Input::getChar()))
     {
@@ -81,27 +81,30 @@ bool Motor::parseInput(char c)
             break;
         }
     }
-    return true;
+    return Message::Processed;
 }
 
-uint16_t Motor::message(Object::Message msg, uint8_t& c)
+void Motor::message(Message& msg)
 {
-    switch (msg)
+    switch (msg.type)
     {
-    case Message::VIEW:
-        Setup::dumpName(getFlag());
-        Serial << ' ' << c_name << ':' << current_power << endl;
-        break;
+        case Message::View:
+            Setup::dumpName(getFlag());
+            Serial << ' ' << c_name << ':' << current_power << endl;
+            msg.answer = Message::Processed;
+            break;
 
-    case Message::HELP:
-        help();
-        break;
+        case Message::Help:
+            help();
+            msg.answer = Message::Processed;
+            break;
 
-    case Message::PARSE_INPUT:
-        return uint16_t(parseInput(c));
+        case Message::ParseInput:
+            msg.answer = parseInput(msg.c);
+            break;
 
-    case LOOP:break;
-    case GET_PERSIST_INFO:break;
+        default:
+            msg.answer = Message::Unprocessed;
+            break;
     }
-    return uint16_t(false);
 }
